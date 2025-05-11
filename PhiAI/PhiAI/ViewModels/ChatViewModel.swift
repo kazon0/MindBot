@@ -4,19 +4,19 @@ import CoreData
 class ChatViewModel: ObservableObject {
     @Published var messages: [ChatEntites] = []
     @Published var inputText: String = ""
+    @Published var user: UserEntites
 
     private let context: NSManagedObjectContext
-    private let currentUser: UserEntites
 
     init(context: NSManagedObjectContext, user: UserEntites) {
         self.context = context
-        self.currentUser = user
+        self.user = user
         fetchMessages()
     }
 
     func fetchMessages() {
         let request: NSFetchRequest<ChatEntites> = ChatEntites.fetchRequest()
-        request.predicate = NSPredicate(format: "user == %@", currentUser)
+        request.predicate = NSPredicate(format: "user == %@", user)
         request.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: true)]
         do {
             messages = try context.fetch(request)
@@ -35,7 +35,7 @@ class ChatViewModel: ObservableObject {
         userMessage.timestamp = Date()
         userMessage.isUser = true
         userMessage.conversationID = UUID()
-        userMessage.user = currentUser
+        userMessage.user = user
 
         inputText = ""
         save()
@@ -47,7 +47,7 @@ class ChatViewModel: ObservableObject {
             aiMessage.timestamp = Date()
             aiMessage.isUser = false
             aiMessage.conversationID = UUID()
-            aiMessage.user = self.currentUser
+            aiMessage.user = self.user
 
             self.save()
         }

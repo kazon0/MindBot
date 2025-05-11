@@ -9,9 +9,11 @@ struct PhiAIApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ControlView()
-                .environmentObject(appVM)
-                .environmentObject(vm)
+            NavigationView{
+                ControlView()
+                    .environmentObject(appVM)
+                    .environmentObject(vm)
+            }
         }
     }
 }

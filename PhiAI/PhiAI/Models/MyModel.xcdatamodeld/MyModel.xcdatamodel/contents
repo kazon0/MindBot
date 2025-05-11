@@ -10,6 +10,7 @@
     </entity>
     <entity name="UserEntites" representedClassName=".UserEntites" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="isGuest" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="pwd" optional="YES" attributeType="String"/>
         <relationship name="chat" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ChatEntites" inverseName="user" inverseEntity="ChatEntites"/>

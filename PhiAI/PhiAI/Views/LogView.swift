@@ -53,6 +53,7 @@ struct LogView: View {
             Alert(title: Text(alertTitle))
         }
         .onAppear {
+            // 清空输入框
             username = ""
             password = ""
         }
@@ -63,10 +64,9 @@ struct LogView: View {
         if appVM.isLoggedIn {
             alertTitle = "登录成功 🥳"
             showAlert = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                if let user = appVM.currentUser {
-                    onLogin(user)
-                }
+            // 直接调用 onLogin
+            if let user = appVM.currentUser {
+                onLogin(user)
             }
         } else if let error = appVM.errorMessage {
             alertTitle = "登录失败: \(error)"
