@@ -84,6 +84,7 @@ class APIManager {
         return try JSONDecoder().decode(UserInfo.self, from: data)
     }
     
+    
     enum APIError: Error {
         case invalidURL
         case invalidResponse
@@ -91,6 +92,130 @@ class APIManager {
         case unauthorized
     }
 }
+
+extension APIManager {
+    
+    // 获取聊天记录
+    func getChatHistory() async throws -> [ChatMessage] {
+        let endpoint = "/api/chat/history"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let token = KeychainHelper.shared.get(for: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode([ChatMessage].self, from: data)
+    }
+
+    // 发送消息到 AI 聊天接口
+     func sendMessageToChatBot(message: String) async throws -> String{
+        let endpoint = "/api/chat/sendMessage"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body = ["message": message]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        if httpResponse.statusCode == 200 {
+            // 假设 API 返回的是 AI 回复的消息
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let aiMessage = json["response"] as? String {
+                return aiMessage
+            } else {
+                throw APIError.invalidResponse
+            }
+        } else {
+            throw APIError.loginFailed
+        }
+    }
+}
+
+
+extension APIManager {
+    
+    // 获取所有帖子
+    func getAllPosts() async throws -> [Post] {
+        let endpoint = "/api/community/posts"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let token = KeychainHelper.shared.get(for: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode([Post].self, from: data)
+    }
+
+    // 发布帖子
+    func createPost(content: String, isAnonymous: Bool) async throws {
+        let endpoint = "/api/community/posts"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = KeychainHelper.shared.get(for: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let body: [String: Any] = [
+            "content": content,
+            "isAnonymous": isAnonymous
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 else {
+            throw APIError.invalidResponse
+        }
+    }
+
+    // 添加评论
+    func addComment(postId: Int, content: String) async throws {
+        let endpoint = "/api/community/posts/\(postId)/comments"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = KeychainHelper.shared.get(for: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let body: [String: Any] = ["content": content]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 201 else {
+            throw APIError.invalidResponse
+        }
+    }
+}
+
 
 // Keychain帮助类
 class KeychainHelper {
@@ -137,4 +262,29 @@ struct UserInfo: Codable {
     let phone: String?
     let gender: Int?
     let status: Int?
+}
+
+struct ChatMessage: Codable, Identifiable {
+    let id: UUID
+    let text: String
+    let timestamp: String  // 或 Date，如果 API 返回是 ISO 格式
+    let isUser: Bool
+}
+
+
+//帖子和评论数据结构
+struct Post: Codable, Identifiable {
+    let id: Int
+    let content: String
+    let isAnonymous: Bool
+    let timestamp: String
+    let user: UserInfo?
+    let comments: [Comment]?
+}
+
+struct Comment: Codable, Identifiable {
+    let id: Int
+    let content: String
+    let timestamp: String
+    let user: UserInfo?
 }

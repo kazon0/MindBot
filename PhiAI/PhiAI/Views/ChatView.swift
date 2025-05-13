@@ -12,14 +12,14 @@ struct ChatView: View {
                             HStack {
                                 if message.isUser {
                                     Spacer()
-                                    Text(message.text ?? "")
+                                    Text(message.text)
                                         .padding()
                                         .background(Color.accentColor)
                                         .foregroundColor(.white)
                                         .cornerRadius(10)
                                         .frame(maxWidth: 250, alignment: .trailing)
                                 } else {
-                                    Text(message.text ?? "")
+                                    Text(message.text)
                                         .padding()
                                         .background(Color(#colorLiteral(red: 0.8661221862, green: 0.8661221862, blue: 0.8661221862, alpha: 0.8470588235)))
                                         .cornerRadius(10)
@@ -42,40 +42,30 @@ struct ChatView: View {
                 TextField("输入你的心情...", text: $viewModel.inputText)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                 Button("发送") {
-                    viewModel.sendMessage()
+                    // Wrap the async call inside a Task
+                    Task {
+                        await viewModel.sendMessage()
+                    }
                 }
                 .disabled(viewModel.inputText.trimmingCharacters(in: .whitespaces).isEmpty)
             }
             .padding()
         }
         .navigationTitle("AI 聊天室")
+        .task {
+            await viewModel.fetchMessages()
+        }
     }
 }
 
 #Preview {
-    let mockUser = UserEntites(context: CoreDataViewModel.shared.container.viewContext)
-    mockUser.id = "12345"
-    mockUser.name = "Mock User"
-    mockUser.isGuest = false
-
-    let mockMessages: [ChatEntites] = [
-        ChatEntites(context: CoreDataViewModel.shared.container.viewContext),
-        ChatEntites(context: CoreDataViewModel.shared.container.viewContext)
+    let mockMessages: [ChatMessage] = [
+        ChatMessage(id: UUID(), text: "你好！我感觉有点压力大。", timestamp: ISO8601DateFormatter().string(from: Date()), isUser: true),
+        ChatMessage(id: UUID(), text: "你提到压力，想聊聊吗？", timestamp: ISO8601DateFormatter().string(from: Date()), isUser: false)
     ]
-    
-    mockMessages[0].id = UUID()
-    mockMessages[0].text = "你好！我感觉有点压力大。"
-    mockMessages[0].isUser = true
-    mockMessages[0].timestamp = Date()
 
-    mockMessages[1].id = UUID()
-    mockMessages[1].text = "你提到压力，想聊聊吗？"
-    mockMessages[1].isUser = false
-    mockMessages[1].timestamp = Date()
-
-    let chatViewModel = ChatViewModel(context: CoreDataViewModel.shared.container.viewContext, user: mockUser)
+    let chatViewModel = ChatViewModel()
     chatViewModel.messages = mockMessages
-    
+
     return ChatView(viewModel: chatViewModel)
 }
-

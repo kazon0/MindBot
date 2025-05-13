@@ -93,7 +93,7 @@ struct InfoRow: View {
         let context = vm.container.viewContext
         let user = UserEntites(context: context)
         user.name = "测试用户"
-        user.id = "1001"
+        user.id = 1001
         user.pwd = "123456"
 
         return NavigationView {

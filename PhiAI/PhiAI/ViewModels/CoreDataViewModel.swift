@@ -9,13 +9,32 @@ class CoreDataViewModel: ObservableObject {
 
     init() {
         container = NSPersistentContainer(name: "MyModel")
+
+        let description = container.persistentStoreDescriptions.first
+        description?.shouldMigrateStoreAutomatically = true
+        description?.shouldInferMappingModelAutomatically = true
+
         container.loadPersistentStores { (description, error) in
-            if let error = error {
-                print("❌ Core Data 加载失败: \(error)")
+            if let error = error as NSError? {
+                print("❌ Core Data 加载失败: \(error), \(error.userInfo)")
+
+                // 🧹 开发阶段自动删除旧数据库
+                if let url = description.url {
+                    try? FileManager.default.removeItem(at: url)
+                    self.container.loadPersistentStores { _, error in
+                        if let error = error {
+                            print("❌ 重试加载失败: \(error)")
+                        } else {
+                            print("✅ Core Data 重新加载成功")
+                        }
+                    }
+                }
             }
         }
+
         fetchUsers()
     }
+
 
     func fetchUsers() {
         let request = NSFetchRequest<UserEntites>(entityName: "UserEntites")
@@ -31,7 +50,7 @@ class CoreDataViewModel: ObservableObject {
         let newUser = UserEntites(context: context)
         newUser.name = name
         newUser.pwd = pwd
-        newUser.id = UUID().uuidString
+        newUser.id = Int64(Date().timeIntervalSince1970 * 1000)
         newUser.isGuest = false
         saveData()
     }

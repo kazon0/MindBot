@@ -1,5 +1,4 @@
 import Foundation
-import CoreData
 
 class AppViewModel: ObservableObject {
     @Published var currentUser: UserEntites? = nil
@@ -11,7 +10,6 @@ class AppViewModel: ObservableObject {
     }
 
     init() {
-        // 在初始化时调用异步方法
         Task {
             await autoLoginOrGuest()
         }
@@ -23,7 +21,7 @@ class AppViewModel: ObservableObject {
                 try await fetchUserInfoAndSync()
             } catch {
                 print("自动登录失败：\(error)")
-                setGuestUser()  // 出现错误时也进入游客模式
+                setGuestUser()
             }
         } else {
             setGuestUser()
@@ -36,7 +34,6 @@ class AppViewModel: ObservableObject {
 
         do {
             let success = try await APIManager.shared.login(username: username, password: password)
-
             if success {
                 try await fetchUserInfoAndSync(password: password)
             }
@@ -55,16 +52,16 @@ class AppViewModel: ObservableObject {
         await MainActor.run {
             let context = CoreDataViewModel.shared.container.viewContext
             let newUser = UserEntites(context: context)
-            newUser.id = String(userInfo.id)
+            newUser.id = Int64(userInfo.id)  // ✅ 类型转换
             newUser.name = userInfo.username
             newUser.pwd = password
             newUser.isGuest = false
+
             do {
                 try context.save()
                 self.currentUser = newUser
             } catch {
                 print("保存用户信息失败: \(error.localizedDescription)")
-                // 处理保存失败的情况，可能需要向用户显示错误信息
             }
         }
     }
@@ -77,12 +74,12 @@ class AppViewModel: ObservableObject {
 
     func setGuestUser() {
         if let user = currentUser, user.isGuest {
-            return // 已经是游客用户了，避免重复设置
+            return
         }
 
         let context = CoreDataViewModel.shared.container.viewContext
         let guest = UserEntites(context: context)
-        guest.id = "guest"
+        guest.id = -1  // ✅ 统一用 -1 表示游客
         guest.name = "游客"
         guest.pwd = ""
         guest.isGuest = true

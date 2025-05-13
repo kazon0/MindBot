@@ -11,7 +11,7 @@ struct MainView: View {
     
     private var chatDestination: some View {
             if let user = appVM.currentUser, !user.isGuest {
-                return AnyView(ChatView(viewModel: ChatViewModel(context: vm.container.viewContext, user: user)))
+                return AnyView(ChatView(viewModel: ChatViewModel()))
             }
         else{
             return AnyView(EmptyView())
@@ -45,14 +45,7 @@ struct MainView: View {
                           showLogin = true  // 如果是游客，显示登录界面
                           selectedTab = 2  // 切换到"我的"标签
                       } else {
-                          NavigationLink(
-                              destination: chatDestination,
-                              isActive: $navigateToChat,
-                              label: {
-                                  EmptyView()
-                              }
-                          )
-                          .hidden()
+                          navigateToChat = true
                       }
                   }) {
                       buttonView
@@ -77,6 +70,14 @@ struct MainView: View {
                         planView(animate: $animate)
                     }
                 }
+                NavigationLink(
+                    destination: chatDestination,
+                    isActive: $navigateToChat,
+                    label: {
+                        EmptyView()
+                    }
+                )
+                .hidden()
             }
         }
         .onAppear(perform: addAnimation)

@@ -26,6 +26,7 @@
 		76AA2A1F2DCDD461003BD2A3 /* CommunityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA2A1E2DCDD461003BD2A3 /* CommunityView.swift */; };
 		76AA2A242DCDFAD9003BD2A3 /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA2A232DCDFAD9003BD2A3 /* ChatViewModel.swift */; };
 		76AA2A2C2DCF2B28003BD2A3 /* APIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA2A2B2DCF2B28003BD2A3 /* APIManager.swift */; };
+		76AA2A302DD216B2003BD2A3 /* CommunityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA2A2F2DD216B2003BD2A3 /* CommunityViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,11 @@
 		76AA2A1E2DCDD461003BD2A3 /* CommunityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityView.swift; sourceTree = "<group>"; };
 		76AA2A232DCDFAD9003BD2A3 /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
 		76AA2A2B2DCF2B28003BD2A3 /* APIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
+		76AA2A2F2DD216B2003BD2A3 /* CommunityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityViewModel.swift; sourceTree = "<group>"; };
+		76AA2A312DD21BD8003BD2A3 /* MyModel 2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MyModel 2.xcdatamodel"; sourceTree = "<group>"; };
+		76AA2A322DD37794003BD2A3 /* MyModel 3.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MyModel 3.xcdatamodel"; sourceTree = "<group>"; };
+		76AA2A332DD3780F003BD2A3 /* MyModel 4.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MyModel 4.xcdatamodel"; sourceTree = "<group>"; };
+		76AA2A342DD39E04003BD2A3 /* MyModel 5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MyModel 5.xcdatamodel"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +138,7 @@
 				76AA2A052DC904FE003BD2A3 /* CoreDataViewModel.swift */,
 				76AA2A142DCA640C003BD2A3 /* AppViewModel.swift */,
 				76AA2A232DCDFAD9003BD2A3 /* ChatViewModel.swift */,
+				76AA2A2F2DD216B2003BD2A3 /* CommunityViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -221,6 +228,7 @@
 				76AA2A062DC904FE003BD2A3 /* CoreDataViewModel.swift in Sources */,
 				76AA2A172DCA653F003BD2A3 /* ProfileWrapperView.swift in Sources */,
 				76AA2A2C2DCF2B28003BD2A3 /* APIManager.swift in Sources */,
+				76AA2A302DD216B2003BD2A3 /* CommunityViewModel.swift in Sources */,
 				76AA29FF2DC9043E003BD2A3 /* Persistence.swift in Sources */,
 				76AA2A002DC9043E003BD2A3 /* PhiAI.xcdatamodeld in Sources */,
 				76AA2A0F2DCA1CC0003BD2A3 /* LogView.swift in Sources */,
@@ -450,6 +458,10 @@
 		76AA2A092DC90E8A003BD2A3 /* MyModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				76AA2A342DD39E04003BD2A3 /* MyModel 5.xcdatamodel */,
+				76AA2A332DD3780F003BD2A3 /* MyModel 4.xcdatamodel */,
+				76AA2A322DD37794003BD2A3 /* MyModel 3.xcdatamodel */,
+				76AA2A312DD21BD8003BD2A3 /* MyModel 2.xcdatamodel */,
 				76AA2A0A2DC90E8A003BD2A3 /* MyModel.xcdatamodel */,
 			);
 			currentVersion = 76AA2A0A2DC90E8A003BD2A3 /* MyModel.xcdatamodel */;
