@@ -45,6 +45,7 @@ class AppViewModel: ObservableObject {
         } catch {
             await MainActor.run {
                 errorMessage = error.localizedDescription
+                currentUser = nil   // 失败时清空用户，避免误判登录成功
             }
         }
 

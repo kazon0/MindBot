@@ -10,8 +10,10 @@ struct CommunityView: View {
         NavigationView {
             VStack {
                 // 帖子加载状态
+                
                 if viewModel.isLoading {
                     ProgressView("加载中...")
+                        .padding()
                 } else if let error = viewModel.errorMessage {
                     Text(error)
                         .padding()

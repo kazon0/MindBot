@@ -51,6 +51,10 @@ struct MainView: View {
                   }
                 
                 .padding(.bottom,20)
+                
+                .navigationDestination(isPresented: $navigateToChat) {
+                    ChatView(viewModel: ChatViewModel())
+                }
 
                 ZStack(alignment: .top) {
                     RoundedRectangle(cornerRadius: 40)
@@ -69,14 +73,6 @@ struct MainView: View {
                         planView(animate: $animate)
                     }
                 }
-                NavigationLink(
-                    destination: chatDestination,
-                    isActive: $navigateToChat,
-                    label: {
-                        EmptyView()
-                    }
-                )
-                .hidden()
             }
         }
         .onAppear(perform: addAnimation)

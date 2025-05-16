@@ -43,6 +43,7 @@
 		76AA2A232DCDFAD9003BD2A3 /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
 		76AA2A2B2DCF2B28003BD2A3 /* APIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
 		76AA2A2F2DD216B2003BD2A3 /* CommunityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityViewModel.swift; sourceTree = "<group>"; };
+		76AA2A352DD748D9003BD2A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +84,7 @@
 		76AA29F82DC9043E003BD2A3 /* PhiAI */ = {
 			isa = PBXGroup;
 			children = (
+				76AA2A352DD748D9003BD2A3 /* Info.plist */,
 				76AA2A042DC90465003BD2A3 /* ViewModels */,
 				76AA2A032DC90457003BD2A3 /* Models */,
 				76AA2A022DC90445003BD2A3 /* Views */,
@@ -169,7 +171,6 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
-				Base,
 			);
 			mainGroup = 76AA29CB2DC8FC46003BD2A3;
 			minimizedProjectReferenceProxies = 1;
@@ -351,6 +352,7 @@
 				DEVELOPMENT_TEAM = RKV9W39CAR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PhiAI/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MindBot;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -382,6 +384,7 @@
 				DEVELOPMENT_TEAM = RKV9W39CAR;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PhiAI/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MindBot;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

@@ -2,7 +2,23 @@ import Foundation
 
 class APIManager {
     static let shared = APIManager()
-    private let baseURL = "http://127.0.0.1:4523/m1/6346875-6042456-default"
+    private let baseURL = "http://mf52c582.natappfree.cc"
+    
+    enum APIError: Error, LocalizedError {
+        case invalidURL
+        case invalidResponse
+        case loginFailed(String)
+        case unknown
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidURL: return "无效的URL"
+            case .invalidResponse: return "无效的响应"
+            case .loginFailed(let message): return message
+            case .unknown: return "未知错误"
+            }
+        }
+    }
     
     
     // 注册API
@@ -19,52 +35,68 @@ class APIManager {
         let body = ["username": username, "password": password]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
         }
 
-        if httpResponse.statusCode != 201 && httpResponse.statusCode != 200 {
-            throw APIError.loginFailed
+        if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
+            // 注册成功，直接返回
+            return
+        } else {
+            // 解析服务器返回的错误信息
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let msg = json["message"] as? String {
+                throw APIError.loginFailed(msg)
+            } else {
+                throw APIError.loginFailed("服务器返回错误，状态码：\(httpResponse.statusCode)")
+            }
         }
     }
 
     
     // 登录API
     func login(username: String, password: String) async throws -> Bool {
-        let endpoint = "/api/auth/login?username=\(username)&password=\(password)"
-        guard let url = URL(string: baseURL + endpoint) else {
-            throw APIError.invalidURL
-        }
+         let endpoint = "/api/auth/login?username=\(username)&password=\(password)"
+         guard let url = URL(string: baseURL + endpoint) else {
+             throw APIError.invalidURL
+         }
 
-        print("正在尝试登录：\(username), \(password)")
-        print("请求 URL: \(url)")
+         var request = URLRequest(url: url)
+         request.httpMethod = "POST"
+         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+         let (data, response) = try await URLSession.shared.data(for: request)
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+         guard let httpResponse = response as? HTTPURLResponse else {
+             throw APIError.invalidResponse
+         }
 
-        if let jsonStr = String(data: data, encoding: .utf8) {
-            print("返回结果：\(jsonStr)")
-        }
+         // HTTP状态码不是200直接抛错
+         guard httpResponse.statusCode == 200 else {
+             throw APIError.loginFailed("服务器返回状态码：\(httpResponse.statusCode)")
+         }
 
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
+         // 解析JSON，判断code字段
+         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+             throw APIError.unknown
+         }
 
-        if httpResponse.statusCode == 200 {
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let token = json["token"] as? String {
-                KeychainHelper.shared.save(token, for: "authToken")
-            }
-            return true
-        } else {
-            throw APIError.loginFailed
-        }
-    }
+         if let code = json["code"] as? Int, code == 200 {
+             // 登录成功，保存token
+             if let dataDict = json["data"] as? [String: Any],
+                let token = dataDict["token"] as? String {
+                 KeychainHelper.shared.save(token, for: "authToken")
+             }
+             return true
+         } else {
+             // 读取错误信息
+             let msg = json["message"] as? String ?? "登录失败"
+             throw APIError.loginFailed(msg)
+         }
+     }
+
 
 
     // 获取用户信息
@@ -84,13 +116,6 @@ class APIManager {
         return try JSONDecoder().decode(UserInfo.self, from: data)
     }
     
-    
-    enum APIError: Error {
-        case invalidURL
-        case invalidResponse
-        case loginFailed
-        case unauthorized
-    }
 }
 
 extension APIManager {
@@ -141,7 +166,7 @@ extension APIManager {
                 throw APIError.invalidResponse
             }
         } else {
-            throw APIError.loginFailed
+            throw APIError.loginFailed("服务器返回状态码不是200")
         }
     }
 }

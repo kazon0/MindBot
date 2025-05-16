@@ -11,16 +11,15 @@ struct ProfileWrapperView: View {
                 // 如果是游客
                 if user.id == -1 {
                     VStack{
-                        Text("您正在以游客身份浏览")
+                        Text("您正在以游客身份浏览,请先登录吧～")
                             .font(.title)
                             .padding()
-                        
-                        // 提供游客功能或限制功能
-                        Text("游客功能：查看社区")
-                            .padding()
 
-                        Button("登录") {
+                        Button(action:{
                             showLogin = true
+                        }) {
+                            Text("登录")
+                                .font(.title)
                         }
                     }
                     .padding()
