@@ -9,7 +9,6 @@ struct CommunityView: View {
     var body: some View {
         NavigationView {
             VStack {
-                postInputSection
                 // 帖子加载状态
                 if viewModel.isLoading {
                     ProgressView("加载中...")
@@ -26,6 +25,10 @@ struct CommunityView: View {
             }
             
             .navigationTitle("心灵交流")
+            .navigationBarItems(
+                trailing:
+                    NavigationLink("Add",destination:PostAddView(viewModel: viewModel, newPostContent: $newPostContent, isAnonymous: $isAnonymous))
+            )
             .onAppear {
                 fetchPosts()
             }
@@ -38,6 +41,25 @@ struct CommunityView: View {
         }
     }
 
+
+
+
+    // 帖子列表视图
+    private var postListView: some View {
+        PostListView(viewModel: viewModel, commentText: $commentText)
+    }
+}
+
+struct PostAddView: View {
+    var viewModel: CommunityViewModel
+    @Binding var newPostContent: String
+    @Binding var isAnonymous: Bool
+    var body: some View {
+        VStack{
+            postInputSection
+            Spacer()
+        }
+    }
     // 发布新帖输入框
     private var postInputSection: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -57,14 +79,16 @@ struct CommunityView: View {
                     .background(Color.accentColor)
                     .foregroundColor(.white)
                     .cornerRadius(8)
+                Spacer()
             }
         }
         .padding()
         .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(10)
         .padding()
+        
     }
-
+    
     // 发布帖子
     private func publishPost() {
         Task {
@@ -76,10 +100,6 @@ struct CommunityView: View {
         }
     }
 
-    // 帖子列表视图
-    private var postListView: some View {
-        PostListView(viewModel: viewModel, commentText: $commentText)
-    }
 }
 
 struct PostListView: View {

@@ -9,7 +9,7 @@ struct ProfileWrapperView: View {
             // 确保我们只访问非空的用户
             if let user = appVM.currentUser {
                 // 如果是游客
-                if user.isGuest {
+                if user.id == -1 {
                     VStack{
                         Text("您正在以游客身份浏览")
                             .font(.title)
@@ -26,7 +26,7 @@ struct ProfileWrapperView: View {
                     .padding()
                 } else {
                     // 如果是已登录用户，显示正常界面
-                    MyView(user: user)
+                    MyView()
                 }
             } else {
                 // 用户信息未加载时，显示登录界面

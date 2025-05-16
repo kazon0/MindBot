@@ -6,7 +6,7 @@ struct LogView: View {
     @State private var password: String = ""
     @State private var showAlert = false
     @State private var alertTitle = ""
-    var onLogin: (UserEntites) -> Void
+    var onLogin: (UserInfo) -> Void
     var onCancel: () -> Void
 
     var body: some View {

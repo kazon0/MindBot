@@ -3,14 +3,13 @@ import SwiftUI
 struct MainView: View {
     @State var animate: Bool = false
     @EnvironmentObject var appVM: AppViewModel
-    @EnvironmentObject var vm: CoreDataViewModel
     @State private var navigateToChat = false
     
     @Binding var selectedTab: Int
     @Binding var showLogin: Bool
     
     private var chatDestination: some View {
-            if let user = appVM.currentUser, !user.isGuest {
+            if let user = appVM.currentUser, user.id != -1 {
                 return AnyView(ChatView(viewModel: ChatViewModel()))
             }
         else{
@@ -41,7 +40,7 @@ struct MainView: View {
                 }
 
                 Button(action: {
-                      if appVM.currentUser?.isGuest ?? true {
+                      if  appVM.currentUser?.id == -1 || appVM.currentUser == nil {
                           showLogin = true  // 如果是游客，显示登录界面
                           selectedTab = 2  // 切换到"我的"标签
                       } else {
@@ -192,7 +191,6 @@ struct planView: View {
             NavigationView {
                 MainView(selectedTab: $selectedTab, showLogin: $showLogin)
                     .environmentObject(AppViewModel())
-                    .environmentObject(CoreDataViewModel())
             }
         }
     }
