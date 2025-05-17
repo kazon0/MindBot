@@ -4,7 +4,8 @@ struct MyView: View {
     @State private var userInfo: UserInfo?
     @State private var isLoading = true
     @State private var errorMessage: String?
-    
+    @State private var isEditing = false
+
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
@@ -25,12 +26,28 @@ struct MyView: View {
             }
             .navigationTitle("我的")
             .onAppear {
-                loadUserInfo()
+                Task {
+                    await loadUserInfo()
+                }
+            }
+            .sheet(isPresented: $isEditing) {
+                if let user = userInfo {
+                    EditUserInfoView(user: user) { updatedUser in
+                        Task {
+                            do {
+                                try await APIManager.shared.updateUser(userInfo: updatedUser)
+                                await loadUserInfo() // 重新加载用户数据
+                                isEditing = false    // 自动关闭编辑页
+                            } catch {
+                                errorMessage = "更新失败"
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    // MARK: - 用户头像与基本信息
     private func userProfileSection(user: UserInfo) -> some View {
         HStack(spacing: 10) {
             Image(systemName: "person.circle.fill")
@@ -53,15 +70,25 @@ struct MyView: View {
         .padding(.horizontal)
     }
 
-    // MARK: - 用户信息卡片
     private func userInfoCard(user: UserInfo) -> some View {
         VStack(spacing: 12) {
+            HStack {
+                Text("个人信息")
+                    .font(.headline)
+                Spacer()
+                Button("编辑") {
+                    isEditing = true
+                }
+            }
+
+            InfoRow(title: "用户名", value: user.username)
             InfoRow(title: "真实姓名", value: user.realName ?? "未填写")
-            InfoRow(title: "手机号", value: user.phone ?? "未填写")
             InfoRow(title: "邮箱", value: user.email ?? "未填写")
-            InfoRow(title: "心理状态", value: "良好")
-            InfoRow(title: "最近咨询", value: "2025-05-02")
-            InfoRow(title: "情绪记录", value: "查看历史 >")
+            InfoRow(title: "手机号", value: user.phone ?? "未填写")
+            InfoRow(title: "性别", value: user.gender == 1 ? "男" : "女")
+            InfoRow(title: "账号状态", value: (user.status == 1) ? "正常" : "禁用")
+            InfoRow(title: "注册时间", value: formattedDate(user.createTime))
+            InfoRow(title: "最近更新时间", value: formattedDate(user.updateTime))
         }
         .padding()
         .background(Color(.systemGray6))
@@ -69,11 +96,22 @@ struct MyView: View {
         .padding(.horizontal)
     }
 
-    // MARK: - 登出按钮
+    func formattedDate(_ isoString: String?) -> String {
+        guard let isoString = isoString else { return "未知" }
+        let formatter = ISO8601DateFormatter()
+        if let date = formatter.date(from: isoString) {
+            let displayFormatter = DateFormatter()
+            displayFormatter.dateStyle = .medium
+            displayFormatter.timeStyle = .short
+            return displayFormatter.string(from: date)
+        }
+        return isoString
+    }
+
     private var logoutButton: some View {
         Button("退出登录") {
             KeychainHelper.shared.save("", for: "authToken")
-            // 此处可添加跳转到登录界面等操作
+            // 添加跳转逻辑
         }
         .frame(height: 55)
         .frame(maxWidth: .infinity)
@@ -83,21 +121,18 @@ struct MyView: View {
         .padding()
     }
 
-    // MARK: - 加载用户信息
-    private func loadUserInfo() {
-        Task {
-            do {
-                isLoading = true
-                userInfo = try await APIManager.shared.getUserInfo()
-                errorMessage = nil
-            } catch {
-                errorMessage = "无法获取用户信息"
-            }
-            isLoading = false
+    private func loadUserInfo() async {
+        isLoading = true
+        do {
+            let user = try await APIManager.shared.getUserInfo()
+            userInfo = user
+            errorMessage = nil
+        } catch {
+            errorMessage = "无法获取用户信息"
         }
+        isLoading = false
     }
 }
-
 
 struct InfoRow: View {
     var title: String

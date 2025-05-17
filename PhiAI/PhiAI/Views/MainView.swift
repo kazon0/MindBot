@@ -19,64 +19,66 @@ struct MainView: View {
 
 
     var body: some View {
-        ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(#colorLiteral(red: 0.824, green: 0.814, blue: 0.811, alpha: 1)),
-                    Color(#colorLiteral(red: 0.984, green: 0.919, blue: 0.821, alpha: 1)),
-                    Color(#colorLiteral(red: 0.837, green: 0.977, blue: 0.602, alpha: 1))
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            VStack {
-                ZStack(alignment: .topLeading) {
-                    Image("GirlStudy")
-                        .resizable()
-                        .scaledToFit()
-                        .cornerRadius(30)
-                }
-
-                Button(action: {
-                      if  appVM.currentUser?.id == -1 || appVM.currentUser == nil {
-                          showLogin = true  // 如果是游客，显示登录界面
-                          selectedTab = 2  // 切换到"我的"标签
-                      } else {
-                          navigateToChat = true
-                      }
-                  }) {
-                      buttonView
-                  }
+        NavigationStack{
+            ZStack {
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(#colorLiteral(red: 0.824, green: 0.814, blue: 0.811, alpha: 1)),
+                        Color(#colorLiteral(red: 0.984, green: 0.919, blue: 0.821, alpha: 1)),
+                        Color(#colorLiteral(red: 0.837, green: 0.977, blue: 0.602, alpha: 1))
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
-                .padding(.bottom,20)
-                
-                .navigationDestination(isPresented: $navigateToChat) {
-                    ChatView(viewModel: ChatViewModel())
-                }
-
-                ZStack(alignment: .top) {
-                    RoundedRectangle(cornerRadius: 40)
-                        .foregroundColor(Color(#colorLiteral(red: 0.737, green: 0.842, blue: 0.530, alpha: 1)))
-                    RoundedRectangle(cornerRadius: 40)
-                        .foregroundColor(Color(#colorLiteral(red: 0.804, green: 0.926, blue: 0.591, alpha: 1)))
-                        .frame(height: 320)
-                        .padding()
-
-                    VStack {
-                        HStack(spacing: 40) {
-                            TabBarView(iconName: "情绪日志", action: {})
-                            TabBarView(iconName: "心灵鸡汤", action: {})
-                            TabBarView(iconName: "预约咨询", action: {})
+                VStack {
+                    ZStack(alignment: .topLeading) {
+                        Image("GirlStudy")
+                            .resizable()
+                            .scaledToFit()
+                            .cornerRadius(30)
+                    }
+                    
+                    Button(action: {
+                        if  appVM.currentUser?.id == -1 || appVM.currentUser == nil {
+                            showLogin = true  // 如果是游客，显示登录界面
+                            selectedTab = 2  // 切换到"我的"标签
+                        } else {
+                            navigateToChat = true
                         }
-                        planView(animate: $animate)
+                    }) {
+                        buttonView
+                    }
+                    
+                    .padding(.bottom,20)
+                    
+                    .navigationDestination(isPresented: $navigateToChat) {
+                        ChatView(viewModel: ChatViewModel())
+                    }
+                    
+                    ZStack(alignment: .top) {
+                        RoundedRectangle(cornerRadius: 40)
+                            .foregroundColor(Color(#colorLiteral(red: 0.737, green: 0.842, blue: 0.530, alpha: 1)))
+                        RoundedRectangle(cornerRadius: 40)
+                            .foregroundColor(Color(#colorLiteral(red: 0.804, green: 0.926, blue: 0.591, alpha: 1)))
+                            .frame(height: 320)
+                            .padding()
+                        
+                        VStack {
+                            HStack(spacing: 40) {
+                                TabBarView(iconName: "情绪日志", action: {})
+                                TabBarView(iconName: "心灵鸡汤", action: {})
+                                TabBarView(iconName: "预约咨询", action: {})
+                            }
+                            planView(animate: $animate)
+                        }
                     }
                 }
             }
+            .onAppear(perform: addAnimation)
+            .ignoresSafeArea(edges: .bottom)
         }
-        .onAppear(perform: addAnimation)
-        .ignoresSafeArea(edges: .bottom)
     }
 
     var buttonView: some View {

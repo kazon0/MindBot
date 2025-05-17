@@ -22,7 +22,12 @@ class ChatViewModel: ObservableObject {
 
     func sendMessage() async {
         let trimmedText = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedText.isEmpty else { return }
+        guard !trimmedText.isEmpty else {
+            print("输入为空，取消发送")
+            return
+        }
+
+        print("准备发送消息：", trimmedText)
 
         let userMessage = ChatMessage(id: UUID(), text: trimmedText, timestamp: ISO8601DateFormatter().string(from: Date()), isUser: true)
 
@@ -31,11 +36,13 @@ class ChatViewModel: ObservableObject {
 
         do {
             let aiReplyText = try await APIManager.shared.sendMessageToChatBot(message: trimmedText)
+            print("AI 回复：", aiReplyText)
             let aiMessage = ChatMessage(id: UUID(), text: aiReplyText, timestamp: ISO8601DateFormatter().string(from: Date()), isUser: false)
 
             messages.append(aiMessage)
         } catch {
             errorMessage = "AI 回复失败：\(error.localizedDescription)"
+            print(errorMessage ?? "未知错误")
         }
     }
 }

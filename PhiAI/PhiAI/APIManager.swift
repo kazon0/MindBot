@@ -57,72 +57,131 @@ class APIManager {
 
     
     // 登录API
-    func login(username: String, password: String) async throws -> Bool {
-         let endpoint = "/api/auth/login?username=\(username)&password=\(password)"
-         guard let url = URL(string: baseURL + endpoint) else {
-             throw APIError.invalidURL
-         }
+    func login(username: String, password: String) async throws -> (String, UserInfo) {
+            let endpoint = "/api/auth/login"
+            guard let url = URL(string: baseURL + endpoint) else {
+                throw APIError.invalidURL
+            }
 
-         var request = URLRequest(url: url)
-         request.httpMethod = "POST"
-         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
 
-         let (data, response) = try await URLSession.shared.data(for: request)
+            let paramString = "username=\(username)&password=\(password)"
+                .addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!
+            request.httpBody = paramString.data(using: .utf8)
 
-         guard let httpResponse = response as? HTTPURLResponse else {
-             throw APIError.invalidResponse
-         }
+            let (data, response) = try await URLSession.shared.data(for: request)
 
-         // HTTP状态码不是200直接抛错
-         guard httpResponse.statusCode == 200 else {
-             throw APIError.loginFailed("服务器返回状态码：\(httpResponse.statusCode)")
-         }
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                throw APIError.loginFailed("服务器状态异常")
+            }
 
-         // 解析JSON，判断code字段
-         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-             throw APIError.unknown
-         }
+            let result = try JSONDecoder().decode(LoginResponse.self, from: data)
 
-         if let code = json["code"] as? Int, code == 200 {
-             // 登录成功，保存token
-             if let dataDict = json["data"] as? [String: Any],
-                let token = dataDict["token"] as? String {
-                 KeychainHelper.shared.save(token, for: "authToken")
-             }
-             return true
-         } else {
-             // 读取错误信息
-             let msg = json["message"] as? String ?? "登录失败"
-             throw APIError.loginFailed(msg)
-         }
-     }
+            guard result.code == 200, let loginData = result.data else {
+                throw APIError.loginFailed(result.message)
+            }
 
+            // 保存 token
+            KeychainHelper.shared.save(loginData.token, for: "authToken")
+
+            return (loginData.token, loginData.user)
+        }
 
 
     // 获取用户信息
     func getUserInfo() async throws -> UserInfo {
-        let endpoint = "/auth/info"
+        let endpoint = "/api/auth/info"
         guard let url = URL(string: baseURL + endpoint) else {
             throw APIError.invalidURL
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         if let token = KeychainHelper.shared.get(for: "authToken") {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            print("携带的 token:", token)
         }
-        
+
         let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode(UserInfo.self, from: data)
+
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("原始返回 JSON: \(jsonString)")
+        }
+
+        let response = try JSONDecoder().decode(UserInfoResponse.self, from: data)
+
+        guard response.code == 200, let user = response.data else {
+            throw APIError.loginFailed(response.message)
+        }
+
+        return user
     }
     
+    // 更新用户信息
+    func updateUser(userInfo: UserInfo) async throws {
+        let endpoint = "/api/rbac/user"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = KeychainHelper.shared.get(for: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        var updateBody: [String: Any] = [
+            "id": userInfo.id,
+            "username": userInfo.username
+        ]
+
+        if let realName = userInfo.realName, !realName.isEmpty {
+            updateBody["realName"] = realName
+        }
+        if let email = userInfo.email, !email.isEmpty {
+            updateBody["email"] = email
+        }
+        if let phone = userInfo.phone, !phone.isEmpty {
+            updateBody["phone"] = phone
+        }
+        if let avatar = userInfo.avatar, !avatar.isEmpty {
+            updateBody["avatar"] = avatar
+        }
+        if let gender = userInfo.gender {
+            updateBody["gender"] = gender
+        }
+        if let status = userInfo.status {
+            updateBody["status"] = status
+        }
+        if let roles = userInfo.roles {
+            updateBody["roles"] = roles.map { ["id": $0.id] }
+        }
+
+
+        let bodyData = try JSONSerialization.data(withJSONObject: updateBody, options: [])
+        request.httpBody = bodyData
+
+        print("发出 update 请求 JSON：", String(data: bodyData, encoding: .utf8) ?? "")
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw APIError.loginFailed("更新用户信息失败")
+        }
+    }
+
+
+
 }
 
 extension APIManager {
     
     // 获取聊天记录
     func getChatHistory() async throws -> [ChatMessage] {
-        let endpoint = "/api/chat/history"
+        let endpoint = "/api/api/chat/messages/{sessionId}"
         guard let url = URL(string: baseURL + endpoint) else {
             throw APIError.invalidURL
         }
@@ -138,37 +197,39 @@ extension APIManager {
     }
 
     // 发送消息到 AI 聊天接口
-     func sendMessageToChatBot(message: String) async throws -> String{
-        let endpoint = "/api/chat/sendMessage"
-        guard let url = URL(string: baseURL + endpoint) else {
-            throw APIError.invalidURL
-        }
+     func sendMessageToChatBot(message: String) async throws -> String {
+         let endpoint = "/api/api/chat/send"
+         guard let url = URL(string: baseURL + endpoint) else {
+             throw APIError.invalidURL
+         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+         var request = URLRequest(url: url)
+         request.httpMethod = "POST"
+         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let body = ["message": message]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+         let body = ["message": message]
+         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+         let (data, response) = try await URLSession.shared.data(for: request)
 
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
+         guard let httpResponse = response as? HTTPURLResponse else {
+             throw APIError.invalidResponse
+         }
 
-        if httpResponse.statusCode == 200 {
-            // 假设 API 返回的是 AI 回复的消息
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let aiMessage = json["response"] as? String {
-                return aiMessage
-            } else {
-                throw APIError.invalidResponse
-            }
-        } else {
-            throw APIError.loginFailed("服务器返回状态码不是200")
-        }
-    }
+         if httpResponse.statusCode == 200 {
+             // 解析新的结构
+             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let dataDict = json["data"] as? [String: Any],
+                let reply = dataDict["reply"] as? String {
+                 return reply
+             } else {
+                 throw APIError.invalidResponse
+             }
+         } else {
+             throw APIError.loginFailed("服务器返回状态码不是200")
+         }
+     }
+
 }
 
 
@@ -278,15 +339,70 @@ class KeychainHelper {
 }
 
 // 网络返回的用户数据结构
+struct LoginResponse: Codable {
+    let code: Int
+    let message: String
+    let data: LoginData?
+}
+
+struct LoginData: Codable {
+    let permissions: [String]
+    let roles: [String]
+    let token: String
+    let user: UserInfo
+}
+
+// MARK: - UserInfoResponse
+struct UserInfoResponse: Codable {
+    let code: Int
+    let message: String
+    let data: UserInfo?
+}
+
+// MARK: - UserInfo
 struct UserInfo: Codable {
+    var id: Int
+    var username: String
+    var password: String?
+    var realName: String?
+    var avatar: String?
+    var phone: String?
+    var email: String?
+    var gender: Int?
+    var status: Int?
+    var createTime: String?
+    var updateTime: String?
+    var roles: [Role]?
+    var permissions: [Permission]?
+}
+
+// MARK: - Role
+struct Role: Codable {
     let id: Int
-    let username: String
-    let realName: String?
-    let avatar: String?
-    let email: String?
-    let phone: String?
-    let gender: Int?
-    let status: Int?
+    let name: String
+    let code: String
+    let description: String?
+    let status: Int
+    let createTime: String
+    let updateTime: String
+    let permissions: [Permission]?
+}
+
+// MARK: - Permission
+struct Permission: Codable {
+    let id: Int
+    let name: String
+    let code: String
+    let type: Int
+    let status: Int
+    let parentId: Int
+    let sort: Int
+    let icon: String?
+    let component: String?
+    let path: String?
+    let createTime: String
+    let updateTime: String
+    let children: [Permission]?
 }
 
 struct ChatMessage: Codable, Identifiable {

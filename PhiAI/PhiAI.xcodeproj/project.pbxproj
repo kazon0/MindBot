@@ -23,6 +23,7 @@
 		76AA2A242DCDFAD9003BD2A3 /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA2A232DCDFAD9003BD2A3 /* ChatViewModel.swift */; };
 		76AA2A2C2DCF2B28003BD2A3 /* APIManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA2A2B2DCF2B28003BD2A3 /* APIManager.swift */; };
 		76AA2A302DD216B2003BD2A3 /* CommunityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA2A2F2DD216B2003BD2A3 /* CommunityViewModel.swift */; };
+		76AA2A372DD8334B003BD2A3 /* EditUserInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA2A362DD8334B003BD2A3 /* EditUserInfoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		76AA2A2B2DCF2B28003BD2A3 /* APIManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIManager.swift; sourceTree = "<group>"; };
 		76AA2A2F2DD216B2003BD2A3 /* CommunityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityViewModel.swift; sourceTree = "<group>"; };
 		76AA2A352DD748D9003BD2A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		76AA2A362DD8334B003BD2A3 /* EditUserInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditUserInfoView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +110,7 @@
 				76AA2A182DCAEEB8003BD2A3 /* LaunchScreen.storyboard */,
 				76AA2A1C2DCC94C4003BD2A3 /* ChatView.swift */,
 				76AA2A1E2DCDD461003BD2A3 /* CommunityView.swift */,
+				76AA2A362DD8334B003BD2A3 /* EditUserInfoView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -213,6 +216,7 @@
 				76AA2A2C2DCF2B28003BD2A3 /* APIManager.swift in Sources */,
 				76AA2A302DD216B2003BD2A3 /* CommunityViewModel.swift in Sources */,
 				76AA2A0F2DCA1CC0003BD2A3 /* LogView.swift in Sources */,
+				76AA2A372DD8334B003BD2A3 /* EditUserInfoView.swift in Sources */,
 				76AA2A1F2DCDD461003BD2A3 /* CommunityView.swift in Sources */,
 				76AA2A012DC9043E003BD2A3 /* PhiAIApp.swift in Sources */,
 			);
@@ -359,6 +363,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -391,6 +396,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -1,4 +1,3 @@
-
 import Foundation
 
 @MainActor
@@ -9,7 +8,7 @@ class AppViewModel: ObservableObject {
     @Published var isUserLoaded = false
 
     var isLoggedIn: Bool {
-        return currentUser != nil
+        currentUser != nil && currentUser?.id != -1
     }
 
     init() {
@@ -21,56 +20,49 @@ class AppViewModel: ObservableObject {
     func autoLoginOrGuest() async {
         do {
             if let token = KeychainHelper.shared.get(for: "authToken"), !token.isEmpty {
-                self.currentUser = try await APIManager.shared.getUserInfo()
+                currentUser = try await APIManager.shared.getUserInfo()
             } else {
-                self.currentUser = UserInfo(id: -1, username: "游客", realName: nil, avatar: nil, email: nil, phone: nil, gender: nil, status: nil)
+                setGuestUser()
             }
         } catch {
-            self.currentUser = UserInfo(id: -1, username: "游客", realName: nil, avatar: nil, email: nil, phone: nil, gender: nil, status: nil)
+            setGuestUser()
         }
-        self.isUserLoaded = true
+        isUserLoaded = true
     }
 
     func login(username: String, password: String) async {
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
-
+        isLoading = true
+        errorMessage = nil
         do {
-            let success = try await APIManager.shared.login(username: username, password: password)
-            if success {
-                try await fetchUserInfo()
-            }
+            let (_, userInfo) = try await APIManager.shared.login(username: username, password: password)
+            currentUser = userInfo
         } catch {
-            await MainActor.run {
-                errorMessage = error.localizedDescription
-                currentUser = nil   // 失败时清空用户，避免误判登录成功
-            }
+            errorMessage = error.localizedDescription
+            currentUser = nil
         }
-
-        await MainActor.run {
-            isLoading = false
-        }
-    }
-
-    private func fetchUserInfo() async throws {
-        let userInfo = try await APIManager.shared.getUserInfo()
-        await MainActor.run {
-            self.currentUser = userInfo
-        }
+        isLoading = false
     }
 
     func logout() {
         KeychainHelper.shared.save("", for: "authToken")
-        Task {
-            await setGuestUser()
-        }
+        setGuestUser()
     }
 
-    func setGuestUser() async {
-        await MainActor.run {
-            self.currentUser = nil
-        }
+    func setGuestUser() {
+        currentUser = UserInfo(
+            id: -1,
+            username: "游客",
+            password: nil,
+            realName: nil,
+            avatar: nil,
+            phone: nil,
+            email: nil,
+            gender: nil,
+            status: nil,
+            createTime: nil,
+            updateTime: nil,
+            roles: [],
+            permissions: []
+        )
     }
 }
