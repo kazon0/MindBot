@@ -1,3 +1,4 @@
+import CoreData
 import Foundation
 
 @MainActor
@@ -6,15 +7,11 @@ class AppViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var isUserLoaded = false
-
+    
+    
+    // 用户是否登录
     var isLoggedIn: Bool {
         currentUser != nil && currentUser?.id != -1
-    }
-
-    init() {
-        Task {
-            await autoLoginOrGuest()
-        }
     }
 
     func autoLoginOrGuest() async {
@@ -46,23 +43,25 @@ class AppViewModel: ObservableObject {
     func logout() {
         KeychainHelper.shared.save("", for: "authToken")
         setGuestUser()
+        errorMessage = nil
+        isUserLoaded = false
+
+        Task {
+            await autoLoginOrGuest()
+        }
     }
 
     func setGuestUser() {
         currentUser = UserInfo(
             id: -1,
             username: "游客",
-            password: nil,
             realName: nil,
             avatar: nil,
             phone: nil,
             email: nil,
             gender: nil,
             status: nil,
-            createTime: nil,
-            updateTime: nil,
-            roles: [],
-            permissions: []
+            roles: []
         )
     }
 }

@@ -38,8 +38,12 @@ struct ControlView: View {
                     .padding()
             }
         }
+        .task {
+            await appVM.autoLoginOrGuest()  //主动调用，开始加载用户
+        }
     }
 }
+
 
 
 #Preview {

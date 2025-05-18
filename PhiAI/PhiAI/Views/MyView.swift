@@ -1,10 +1,13 @@
 import SwiftUI
 
 struct MyView: View {
+    @EnvironmentObject var appVM: AppViewModel
     @State private var userInfo: UserInfo?
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var isEditing = false
+    
+    @State private var showLogoutConfirm = false
 
     var body: some View {
         NavigationView {
@@ -21,7 +24,7 @@ struct MyView: View {
                     userInfoCard(user: user)
                     logoutButton
                 }
-
+                
                 Spacer()
             }
             .navigationTitle("我的")
@@ -41,6 +44,16 @@ struct MyView: View {
                             } catch {
                                 errorMessage = "更新失败"
                             }
+                        }
+                    }
+                }
+            }
+            .alert("确认退出登录？", isPresented: $showLogoutConfirm) {
+                Button("取消", role: .cancel) {}
+                Button("退出") {
+                    Task {
+                        await MainActor.run {
+                            appVM.logout()
                         }
                     }
                 }
@@ -110,8 +123,7 @@ struct MyView: View {
 
     private var logoutButton: some View {
         Button("退出登录") {
-            KeychainHelper.shared.save("", for: "authToken")
-            // 添加跳转逻辑
+            showLogoutConfirm = true  // 这里改成显示弹窗
         }
         .frame(height: 55)
         .frame(maxWidth: .infinity)
@@ -149,3 +161,9 @@ struct InfoRow: View {
         .padding(.vertical, 6)
     }
 }
+
+#Preview {
+        MyView()
+            .environmentObject(AppViewModel())
+}
+

@@ -179,9 +179,125 @@ class APIManager {
 
 extension APIManager {
     
-    // 获取聊天记录
-    func getChatHistory() async throws -> [ChatMessage] {
-        let endpoint = "/api/api/chat/messages/{sessionId}"
+    func getChatHistory(sessionId: Int) async throws -> [ChatMessage] {
+        let url = URL(string: "\(baseURL)/api/api/chat/messages/\(sessionId)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        // 携带token（如果需要鉴权）
+        if let token = KeychainHelper.shared.get(for: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        guard httpResponse.statusCode == 200 else {
+            let body = String(data: data, encoding: .utf8) ?? "无正文"
+            print(" 获取历史记录失败（状态码：\(httpResponse.statusCode)）：\(body)")
+            throw URLError(.badServerResponse)
+        }
+
+        do {
+            let response = try JSONDecoder().decode(ChatMessageListResponse.self, from: data)
+            guard response.code == 200 else {
+                throw APIError.loginFailed(response.message)
+            }
+            return response.data
+        } catch {
+            print(" 解析历史记录失败：\(error.localizedDescription)")
+            let raw = String(data: data, encoding: .utf8) ?? "非文本响应"
+            print(" 原始返回内容：\(raw)")
+            throw error
+        }
+    }
+
+
+
+
+    // 发送消息到 AI 聊天接口
+    func sendMessageToChatBot(message: String, sessionId: Int) async throws -> String {
+        let endpoint = "/api/api/chat/send"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        // 添加 sessionId 到请求体中
+        let body: [String: Any] = [
+            "message": message,
+            "sessionId": sessionId
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        if httpResponse.statusCode == 200 {
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let dataDict = json["data"] as? [String: Any],
+               let reply = dataDict["reply"] as? String {
+                return reply
+            } else {
+                throw APIError.invalidResponse
+            }
+        } else {
+            throw APIError.loginFailed("服务器返回状态码不是200")
+        }
+    }
+
+
+}
+
+extension APIManager {
+    struct CreateSessionResponse: Codable {
+        let code: Int
+        let message: String
+        let data: ChatSession
+    }
+
+    func createChatSession() async throws -> ChatSession {
+        let endpoint = "/api/api/chat/session"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = KeychainHelper.shared.get(for: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let response = try JSONDecoder().decode(CreateSessionResponse.self, from: data)
+
+        guard response.code == 200 else {
+            throw APIError.invalidResponse
+        }
+
+        return response.data
+    }
+}
+
+extension APIManager {
+    struct ChatSessionsResponse: Codable {
+        let code: Int
+        let data: [ChatSession]
+        let message: String
+    }
+
+    func getAllChatSessions() async throws -> [ChatSession] {
+        let endpoint = "/api/api/chat/sessions"
         guard let url = URL(string: baseURL + endpoint) else {
             throw APIError.invalidURL
         }
@@ -193,44 +309,39 @@ extension APIManager {
         }
 
         let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode([ChatMessage].self, from: data)
+        let response = try JSONDecoder().decode(ChatSessionsResponse.self, from: data)
+
+        guard response.code == 200 else {
+            throw APIError.invalidResponse
+        }
+
+        return response.data
+    }
+    
+    struct GenericResponse<T: Codable>: Codable {
+        let code: Int
+        let message: String
+        let data: T
+    }
+    
+    //删除对话
+    func deleteChatSession(sessionId: Int) async throws -> Bool {
+        let url = URL(string: "\(baseURL)/api/api/chat/session/\(sessionId)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        
+        let decoded = try JSONDecoder().decode(GenericResponse<Bool>.self, from: data)
+        return decoded.data
     }
 
-    // 发送消息到 AI 聊天接口
-     func sendMessageToChatBot(message: String) async throws -> String {
-         let endpoint = "/api/api/chat/send"
-         guard let url = URL(string: baseURL + endpoint) else {
-             throw APIError.invalidURL
-         }
-
-         var request = URLRequest(url: url)
-         request.httpMethod = "POST"
-         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-         let body = ["message": message]
-         request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-         let (data, response) = try await URLSession.shared.data(for: request)
-
-         guard let httpResponse = response as? HTTPURLResponse else {
-             throw APIError.invalidResponse
-         }
-
-         if httpResponse.statusCode == 200 {
-             // 解析新的结构
-             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                let dataDict = json["data"] as? [String: Any],
-                let reply = dataDict["reply"] as? String {
-                 return reply
-             } else {
-                 throw APIError.invalidResponse
-             }
-         } else {
-             throw APIError.loginFailed("服务器返回状态码不是200")
-         }
-     }
-
 }
+
 
 
 extension APIManager {
@@ -406,10 +517,27 @@ struct Permission: Codable {
 }
 
 struct ChatMessage: Codable, Identifiable {
-    let id: UUID
-    let text: String
-    let timestamp: String  // 或 Date，如果 API 返回是 ISO 格式
-    let isUser: Bool
+    let id: Int64
+    let sessionId: Int64
+    let userId: Int64
+    let senderType: String  // "user" or "ai"
+    let content: String
+    let createTime: String
+}
+
+struct ChatMessageListResponse: Codable {
+    let code: Int
+    let message: String
+    let data: [ChatMessage]
+}
+
+
+struct ChatSession: Identifiable, Codable {
+    let id: Int
+    let userId: Int
+    let title: String
+    let createTime: String
+    let updateTime: String
 }
 
 
