@@ -5,6 +5,7 @@ struct ControlView: View {
     @State var selectedTab = 0
     @State var showLogin = false
     @State private var guestRefresh = 0
+    
 
     var body: some View {
         ZStack {
@@ -13,7 +14,7 @@ struct ControlView: View {
                     MainView(selectedTab: $selectedTab, showLogin: $showLogin)
                         .tabItem { Label("主页", systemImage: "house") }
                         .tag(0)
-
+ 
                     CommunityView()
                         .tabItem { Label("社区", systemImage: "message.fill") }
                         .tag(1)
@@ -28,7 +29,6 @@ struct ControlView: View {
                     }
                 }
                 .fullScreenCover(isPresented: $showLogin) {
-                    NavigationStack {
                         LogView(onLogin: { user in
                             appVM.currentUser = user
                             showLogin = false
@@ -36,7 +36,6 @@ struct ControlView: View {
                             showLogin = false
                             selectedTab = 0
                         })
-                    }
                 }
             } else {
                 ProgressView("正在加载...")
