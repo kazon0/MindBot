@@ -4,6 +4,7 @@ struct ControlView: View {
     @EnvironmentObject var appVM: AppViewModel
     @State var selectedTab = 0
     @State var showLogin = false
+    @State private var guestRefresh = 0
 
     var body: some View {
         ZStack {
@@ -16,10 +17,15 @@ struct ControlView: View {
                     CommunityView()
                         .tabItem { Label("社区", systemImage: "message.fill") }
                         .tag(1)
-
-                    ProfileWrapperView(showLogin: $showLogin)
-                        .tabItem { Label("我的", systemImage: "person") }
-                        .tag(2)
+                    
+                    ProfileWrapperView(showLogin: $showLogin, guestRefresh: $guestRefresh)
+                                   .tabItem { Label("我的", systemImage: "person") }
+                                   .tag(2)
+                }
+                .onChange(of: selectedTab) { newTab in
+                    if newTab == 2 {
+                        guestRefresh += 1
+                    }
                 }
                 .fullScreenCover(isPresented: $showLogin) {
                     NavigationStack {

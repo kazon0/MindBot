@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MainView: View {
     @State var animate: Bool = false
+    
     @EnvironmentObject var appVM: AppViewModel
     @State private var navigateToChat = false
     
@@ -50,7 +51,8 @@ struct MainView: View {
                     }) {
                         buttonView
                     }
-                    
+                    .shadow(color: Color.black.opacity(0.05), radius: animate ? 12 : 6, x: 0, y: 6)
+                    .scaleEffect(animate ? 1.03 : 1.0)
                     .padding(.bottom,20)
                     
                     .navigationDestination(isPresented: $navigateToChat) {
@@ -67,9 +69,9 @@ struct MainView: View {
                         
                         VStack {
                             HStack(spacing: 40) {
-                                TabBarView(iconName: "情绪日志", action: {})
-                                TabBarView(iconName: "心灵鸡汤", action: {})
-                                TabBarView(iconName: "预约咨询", action: {})
+                                TabBarView(iconName: "情绪日志", action: {}, animate: $animate)
+                                TabBarView(iconName: "心灵鸡汤", action: {}, animate: $animate)
+                                TabBarView(iconName: "预约咨询", action: {}, animate: $animate)
                             }
                             planView(animate: $animate)
                         }
@@ -83,7 +85,7 @@ struct MainView: View {
 
     var buttonView: some View {
         HStack(spacing: 0) {
-            Text("有什么想说的...(^_^)")
+            TypingText(texts: ["有什么想说的...(^_^)", "请告诉MindBot..."])
                 .font(.title3)
                 .frame(maxWidth: .infinity)
                 .frame(width: 250, height: 55)
@@ -121,7 +123,7 @@ struct MainView: View {
 struct TabBarView: View {
     var iconName: String
     var action: () -> Void
-
+    @Binding var animate: Bool
     var body: some View {
         VStack {
             Button(action: action) {
@@ -131,6 +133,8 @@ struct TabBarView: View {
                     .frame(width: 70)
                     .shadow(radius: 10)
             }
+            .shadow(color: Color.black.opacity(0.05), radius: animate ? 12 : 6, x: 0, y: 6)
+            .scaleEffect(animate ? 1.03 : 1.0)
             Text(iconName)
                 .fontWeight(.heavy)
         }
@@ -172,11 +176,73 @@ struct planView: View {
                         .cornerRadius(10)
                         .shadow(radius: 2)
                 }
+                
+            }
+        }
+        .shadow(color: .green.opacity(animate ? 0.2 : 0.05), radius: animate ? 15 : 6)
+        .scaleEffect(animate ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animate)
+    }
+}
+
+//打字机动画效果
+struct TypingText: View {
+    let texts: [String]
+    @State private var displayedText = ""
+    @State private var charIndex = 0
+    @State private var isDeleting = false
+    @State private var currentTextIndex = 0
+    
+    let typingInterval: Double = 0.12
+    let pauseInterval: Double = 0.8
+    
+    var body: some View {
+        Text(displayedText)
+            .onAppear {
+                startTyping()
+            }
+            .onDisappear {
+                displayedText = ""
+                charIndex = 0
+                isDeleting = false
+                currentTextIndex = 0
+            }
+    }
+    
+    func startTyping() {
+        Timer.scheduledTimer(withTimeInterval: typingInterval, repeats: true) { timer in
+            let currentText = texts[currentTextIndex]
+            
+            if !isDeleting {
+                // 打字中
+                if charIndex < currentText.count {
+                    let index = currentText.index(currentText.startIndex, offsetBy: charIndex)
+                    DispatchQueue.main.async {
+                        displayedText.append(currentText[index])
+                    }
+                    charIndex += 1
+                } else {
+                    // 打完了，暂停并准备退字
+                    DispatchQueue.main.asyncAfter(deadline: .now() + pauseInterval) {
+                        isDeleting = true
+                    }
+                }
+            } else {
+                // 退字中
+                if !displayedText.isEmpty {
+                    DispatchQueue.main.async {
+                        displayedText.removeLast()
+                    }
+                } else {
+                    // 退字完毕，切换下一句，重置状态
+                    charIndex = 0
+                    isDeleting = false
+                    currentTextIndex = (currentTextIndex + 1) % texts.count
+                }
             }
         }
     }
 }
-
 
 
 #Preview {
