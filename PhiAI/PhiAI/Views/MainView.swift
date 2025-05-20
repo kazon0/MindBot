@@ -193,6 +193,8 @@ struct TypingText: View {
     @State private var isDeleting = false
     @State private var currentTextIndex = 0
     
+    @State private var timer: Timer? = nil
+    
     let typingInterval: Double = 0.12
     let pauseInterval: Double = 0.8
     
@@ -202,6 +204,8 @@ struct TypingText: View {
                 startTyping()
             }
             .onDisappear {
+                timer?.invalidate()
+                timer = nil
                 displayedText = ""
                 charIndex = 0
                 isDeleting = false
@@ -210,39 +214,40 @@ struct TypingText: View {
     }
     
     func startTyping() {
-        Timer.scheduledTimer(withTimeInterval: typingInterval, repeats: true) { timer in
-            let currentText = texts[currentTextIndex]
-            
-            if !isDeleting {
-                // 打字中
-                if charIndex < currentText.count {
-                    let index = currentText.index(currentText.startIndex, offsetBy: charIndex)
-                    DispatchQueue.main.async {
+        timer?.invalidate() // 先停掉旧计时器
+        timer = Timer.scheduledTimer(withTimeInterval: typingInterval, repeats: true) { _ in
+            DispatchQueue.main.async {
+                let currentText = texts[currentTextIndex]
+                if !isDeleting {
+                    if charIndex < currentText.count {
+                        let index = currentText.index(currentText.startIndex, offsetBy: charIndex)
                         displayedText.append(currentText[index])
+                        charIndex += 1
+                    } else {
+                        // 打完了，暂停并准备退字
+                        timer?.invalidate()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + pauseInterval) {
+                            isDeleting = true
+                            startTyping() // 重新开始计时器，退字阶段
+                        }
                     }
-                    charIndex += 1
                 } else {
-                    // 打完了，暂停并准备退字
-                    DispatchQueue.main.asyncAfter(deadline: .now() + pauseInterval) {
-                        isDeleting = true
-                    }
-                }
-            } else {
-                // 退字中
-                if !displayedText.isEmpty {
-                    DispatchQueue.main.async {
+                    if !displayedText.isEmpty {
                         displayedText.removeLast()
+                    } else {
+                        // 退字完毕，切换下一句，重置状态
+                        charIndex = 0
+                        isDeleting = false
+                        currentTextIndex = (currentTextIndex + 1) % texts.count
+                        timer?.invalidate()
+                        startTyping() // 重新开始计时器，开始打字下一句
                     }
-                } else {
-                    // 退字完毕，切换下一句，重置状态
-                    charIndex = 0
-                    isDeleting = false
-                    currentTextIndex = (currentTextIndex + 1) % texts.count
                 }
             }
         }
     }
 }
+
 
 
 #Preview {

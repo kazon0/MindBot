@@ -11,104 +11,122 @@ struct ChatView: View {
                 ProgressView("加载中...")
                     .progressViewStyle(CircularProgressViewStyle())
                 Spacer()
-            }
-            else{
-            // 顶部工具栏：选择会话按钮 + 新建会话按钮 + 当前会话标题
-            HStack(spacing: 16) {
-                Button {
-                    showSessionsSheet = true
-                } label: {
-                    Image(systemName: "list.bullet")
-                        .font(.title2)
-                        .frame(width: 40, height: 40)
-                        .background(Color.blue.opacity(0.8))
-                        .foregroundColor(.white)
-                        .clipShape(Circle())
-                }
-                
-                Button {
-                    Task {
-                        do {
-                            let newSession = try await APIManager.shared.createChatSession()
-                            viewModel.sessions.append(newSession)
-                            await viewModel.selectSession(sessionId: Int64(newSession.id))
-                        } catch {
-                            viewModel.errorMessage = ErrorMessage(message: "创建新会话失败: \(error.localizedDescription)")
+            } else {
+                // 顶部工具栏
+                HStack(spacing: 16) {
+                    Button {
+                        showSessionsSheet = true
+                    } label: {
+                        Image(systemName: "list.bullet")
+                            .font(.title2)
+                            .frame(width: 40, height: 40)
+                            .background(Color.blue.opacity(0.8))
+                            .foregroundColor(.white)
+                            .clipShape(Circle())
+                    }
+
+                    Button {
+                        Task {
+                            do {
+                                let newSession = try await APIManager.shared.createChatSession()
+                                viewModel.sessions.append(newSession)
+                                await viewModel.selectSession(sessionId: Int64(newSession.id))
+                            } catch {
+                                viewModel.errorMessage = ErrorMessage(message: "创建新会话失败: \(error.localizedDescription)")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .frame(width: 40, height: 40)
+                            .background(Color.green.opacity(0.8))
+                            .foregroundColor(.white)
+                            .clipShape(Circle())
+                    }
+
+                    Spacer()
+
+                    Group {
+                        if let currentSession = viewModel.sessions.first(where: { Int64($0.id) == viewModel.currentSessionId }) {
+                            Text(currentSession.title)
+                        } else {
+                            Text("无会话")
+                                .foregroundColor(.gray)
                         }
                     }
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .frame(width: 40, height: 40)
-                        .background(Color.green.opacity(0.8))
-                        .foregroundColor(.white)
-                        .clipShape(Circle())
-                }
-                
-                Spacer()
-                
-                Text(viewModel.sessions.first(where: { Int64($0.id) == viewModel.currentSessionId })?.title ?? "无会话")
                     .font(.headline)
                     .lineLimit(1)
                     .truncationMode(.tail)
-            }
-            .padding()
-            
-            Divider()
-            
-            // 聊天消息列表
-            ScrollViewReader { scrollView in
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
-                        ForEach(viewModel.messages, id: \.id) { message in
-                            HStack {
-                                if message.senderType == "user" {
-                                    Spacer()
-                                    Text(message.content)
-                                        .padding()
-                                        .background(Color.accentColor)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(8)
-                                } else {
-                                    Text(message.content)
-                                        .padding()
-                                        .background(Color.gray.opacity(0.3))
-                                        .cornerRadius(8)
-                                    Spacer()
+                }
+                .padding()
+
+                Divider()
+
+                // 消息列表
+                ScrollViewReader { scrollView in
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 12) {
+                            if viewModel.messages.isEmpty {
+                                Text("暂无消息")
+                                    .foregroundColor(.gray)
+                                    .padding()
+                            } else {
+                                ForEach(viewModel.messages, id: \.id) { message in
+                                    HStack {
+                                        if message.senderType == "user" {
+                                            Spacer()
+                                            Text(message.content)
+                                                .padding()
+                                                .background(Color.accentColor)
+                                                .foregroundColor(.white)
+                                                .cornerRadius(8)
+                                        } else {
+                                            Text(message.content)
+                                                .padding()
+                                                .background(Color.gray.opacity(0.3))
+                                                .cornerRadius(8)
+                                            Spacer()
+                                        }
+                                    }
+                                    .id(message.id)
+                                }
+                            }
+                        }
+                        .padding()
+                        .onChange(of: viewModel.messages.count) { _ in
+                            guard !viewModel.messages.isEmpty, let last = viewModel.messages.last else {
+                                return
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                withAnimation {
+                                    scrollView.scrollTo(last.id, anchor: .bottom)
                                 }
                             }
                         }
                     }
-                    .padding()
-                    .onChange(of: viewModel.messages.count) { _ in
-                        if let last = viewModel.messages.last {
-                            withAnimation {
-                                scrollView.scrollTo(last.id, anchor: .bottom)
-                            }
+                }
+
+                // 输入框
+                HStack {
+                    TextField("输入消息...", text: $viewModel.inputText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+
+                    Button {
+                        Task {
+                            await viewModel.sendMessage()
                         }
+                    } label: {
+                        Text("发送")
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray.opacity(0.5) : Color.accentColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
                     }
+                    .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
+                .padding()
             }
-            
-            HStack {
-                TextField("输入消息...", text: $viewModel.inputText)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                Button {
-                    Task {
-                        await viewModel.sendMessage()
-                    }
-                } label: {
-                    Text("发送")
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.gray.opacity(0.5) : Color.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                }
-                .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }
-            .padding()
-        }
         }
         .sheet(isPresented: $showSessionsSheet) {
             NavigationView {
@@ -123,17 +141,19 @@ struct ChatView: View {
                                         .foregroundColor(.blue)
                                 }
                             }
-                            .contentShape(Rectangle()) // 让整个 HStack 都可以点击
+                            .contentShape(Rectangle())
                             .onTapGesture {
                                 Task {
                                     await viewModel.selectSession(sessionId: Int64(session.id))
-                                    showSessionsSheet = false
+                                    await MainActor.run {
+                                        showSessionsSheet = false
+                                    }
                                 }
                             }
                             .swipeActions {
                                 Button(role: .destructive) {
                                     Task {
-                                        await viewModel.deleteSession(session: session)
+                                        await deleteSafely(session: session)
                                     }
                                 } label: {
                                     Label("删除", systemImage: "trash")
@@ -159,5 +179,14 @@ struct ChatView: View {
         .alert(item: $viewModel.errorMessage) { errorMsg in
             Alert(title: Text("错误"), message: Text(errorMsg.message), dismissButton: .default(Text("确定")))
         }
+    }
+
+    private func deleteSafely(session: ChatSession) async {
+        let sessionsCopy = viewModel.sessions
+        guard sessionsCopy.contains(where: { $0.id == session.id }) else {
+            print("⚠️ 会话已不存在")
+            return
+        }
+        await viewModel.deleteSession(session: session)
     }
 }

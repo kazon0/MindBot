@@ -535,7 +535,7 @@ struct ChatMessageListResponse: Codable {
 struct ChatSession: Identifiable, Codable {
     let id: Int
     let userId: Int
-    let title: String
+    var title: String
     let createTime: String
     let updateTime: String
 }
