@@ -15,7 +15,7 @@ struct ControlView: View {
                         .tabItem { Label("主页", systemImage: "house") }
                         .tag(0)
  
-                    CommunityView()
+                    CreatePostView()
                         .tabItem { Label("社区", systemImage: "message.fill") }
                         .tag(1)
                     

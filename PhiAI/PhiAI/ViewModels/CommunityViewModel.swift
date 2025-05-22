@@ -1,53 +1,43 @@
+
 import Foundation
+import SwiftUI
 
 @MainActor
-class CommunityViewModel: ObservableObject {
-    @Published var posts: [Post] = []
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
+class CreatePostViewModel: ObservableObject {
+    @Published var title = ""
+    @Published var content = ""
+    @Published var tags = ""
+    @Published var coverImage = ""
 
-    private var task: Task<Void, Never>?
+    @Published var isSubmitting = false
+    @Published var alertMessage = ""
+    @Published var showAlert = false
 
-    func fetchPosts() async {
-        isLoading = true
-        errorMessage = nil
-        
-        do {
-            let fetchedPosts = try await APIManager.shared.getAllPosts()
-            await MainActor.run {
-                self.posts = fetchedPosts
-                self.isLoading = false
-            }
-        } catch {
-            await MainActor.run {
-                self.errorMessage = "加载帖子失败: \(error.localizedDescription)"
-                self.isLoading = false
-            }
+    func submitPost() async {
+        guard !title.isEmpty, !content.isEmpty else {
+            alertMessage = "标题和内容不能为空"
+            showAlert = true
+            return
         }
-    }
 
+        isSubmitting = true
 
-    func publishPost(content: String, isAnonymous: Bool) async {
+        let request = CreatePostRequest(
+            title: title,
+            content: content,
+            coverImage: coverImage.isEmpty ? nil : coverImage,
+            tags: tags.isEmpty ? nil : tags,
+            resourceType: "post"
+        )
+
         do {
-            try await APIManager.shared.createPost(content: content, isAnonymous: isAnonymous)
-            await fetchPosts()
+            let post = try await APIManager.shared.createPost(requestBody: request)
+            alertMessage = "发帖成功：\(post.title)"
         } catch {
-            self.errorMessage = "发布失败: \(error.localizedDescription)"
+            alertMessage = "发帖失败：\(error.localizedDescription)"
         }
-    }
 
-    func addComment(to postId: Int, content: String) async {
-        do {
-            try await APIManager.shared.addComment(postId: postId, content: content)
-            await fetchPosts()
-        } catch {
-            DispatchQueue.main.async {
-                self.errorMessage = "评论失败: \(error.localizedDescription)"
-            }
-        }
-    }
-
-    deinit {
-        task?.cancel()
+        isSubmitting = false
+        showAlert = true
     }
 }
