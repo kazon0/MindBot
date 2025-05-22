@@ -5,19 +5,10 @@ struct MainView: View {
     
     @EnvironmentObject var appVM: AppViewModel
     @State private var navigateToChat = false
+    @State private var navigateToEmotionAnalysis = false
     
     @Binding var selectedTab: Int
     @Binding var showLogin: Bool
-    
-    private var chatDestination: some View {
-            if let user = appVM.currentUser, user.id != -1 {
-                return AnyView(ChatView(viewModel: ChatViewModel()))
-            }
-        else{
-            return AnyView(EmptyView())
-        }
-    }
-
 
     var body: some View {
         NavigationStack{
@@ -34,12 +25,8 @@ struct MainView: View {
                 .ignoresSafeArea()
                 
                 VStack {
-                    ZStack(alignment: .topLeading) {
-                        Image("GirlStudy")
-                            .resizable()
-                            .scaledToFit()
-                            .cornerRadius(30)
-                    }
+                    
+                    AnimatedImageView()
                     
                     Button(action: {
                         if  appVM.currentUser?.id == -1 || appVM.currentUser == nil {
@@ -57,6 +44,7 @@ struct MainView: View {
                     
                     .navigationDestination(isPresented: $navigateToChat) {
                         ChatView(viewModel: ChatViewModel())
+                        
                     }
                     
                     ZStack(alignment: .top) {
@@ -69,17 +57,34 @@ struct MainView: View {
                         
                         VStack {
                             HStack(spacing: 40) {
-                                TabBarView(iconName: "情绪日志", action: {}, animate: $animate)
+                                TabBarView(iconName: "情绪日志", action: {
+                                    //跳转到情绪分析界面
+                                    if  appVM.currentUser?.id == -1 || appVM.currentUser == nil {
+                                        showLogin = true
+                                        selectedTab = 2
+                                    } else {
+                                        navigateToEmotionAnalysis = true
+                                    }
+                                }, animate: $animate)
+                                
                                 TabBarView(iconName: "心灵鸡汤", action: {}, animate: $animate)
                                 TabBarView(iconName: "预约咨询", action: {}, animate: $animate)
                             }
+                            
                             planView(animate: $animate)
                         }
+                        
                     }
+                    .navigationDestination(isPresented: $navigateToEmotionAnalysis) {
+                        EmotionAnalysisView()
+                            .environmentObject(appVM)
+                    }
+
                 }
             }
             .onAppear(perform: addAnimation)
             .ignoresSafeArea(edges: .bottom)
+            .padding(.bottom, -10)
         }
     }
 
@@ -118,6 +123,26 @@ struct MainView: View {
         }
     }
 }
+
+struct AnimatedImageView: View {
+    let imageNames = ["GirlStudy1", "GirlStudy3", "GirlStudy2", "GirlGame1", "GirlGame2", "GirlGame3"]
+    @State private var currentIndex = 0
+    let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Image(imageNames[currentIndex])
+                .resizable()
+                .scaledToFit()
+                .cornerRadius(30)
+                .animation(.easeInOut(duration: 3), value: currentIndex)
+        }
+        .onReceive(timer) { _ in
+            currentIndex = (currentIndex + 1) % imageNames.count
+        }
+    }
+}
+
 
 
 struct TabBarView: View {

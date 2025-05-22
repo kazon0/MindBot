@@ -37,12 +37,12 @@ struct RegView: View {
                     .padding(.bottom,240)
                     .padding(.top,40)
                     .padding(.horizontal,50)
-                    .frame(height:620)
+                    .frame(height:650)
                     .foregroundColor(.white.opacity(animate ? 0.7 : 0.4))
                     .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 3)
                 
-                VStack(spacing: 24) {
-                    Text("注册新账号")
+                VStack(spacing: 20) {
+                    Text("欢迎加入")
                         .font(.title)
                         .bold()
                         .foregroundColor(.black)
@@ -51,6 +51,12 @@ struct RegView: View {
                         .offset(y: animate ? 0 : 20)
                         .animation(.easeOut(duration: 0.5).delay(0.4), value: animate)
                         .padding(.top,60)
+                    Text("请开始您的MindBot旅程✨")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .opacity(animate ? 1 : 0)
+                        .offset(y: animate ? 0 : 20)
+                        .animation(.easeOut(duration: 0.5).delay(0.4), value: animate)
                     
                     Group {
                         TextField("请输入用户名", text: $username)
@@ -61,6 +67,7 @@ struct RegView: View {
                     .padding(.horizontal,80)
                     .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
                     .transition(.move(edge: .top))
+                    .foregroundColor(.black)
                     .opacity(animate ? 1 : 0)
                     .offset(y: animate ? 0 : 20)
                     .animation(.easeOut(duration: 0.5).delay(0.4), value: animate)
@@ -87,6 +94,8 @@ struct RegView: View {
                     }
                     
                 }
+                
+                ButterflyView()
       
             }
         }
@@ -140,6 +149,33 @@ struct RegView: View {
         }
     }
 }
+
+struct ButterflyView: View {
+    @State private var flyPhase: CGFloat = 0
+
+    var body: some View {
+        ZStack {
+            // 蝴蝶围绕飞舞
+            Image("Butterfly")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 40, height: 40)
+                .offset(
+                    x: -100+CGFloat(sin(Double(flyPhase)) * 5),
+                    y: 550 + CGFloat(cos(Double(flyPhase * 1.2)) * 12)
+                )
+                .scaleEffect(0.9 + CGFloat(sin(Double(flyPhase * 1))) * 0.08) // 微微缩放模拟拍翅
+                .rotationEffect(.degrees(-20 + sin(Double(flyPhase * 1.5)) * 2))
+                .animation(.linear(duration: 0.02), value: flyPhase)
+        }
+        .onAppear {
+            Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { _ in
+                flyPhase += 0.07
+            }
+        }
+    }
+}
+
 
 #Preview {
     struct RegViewPreviewWrapper: View {

@@ -20,8 +20,8 @@ struct ControlView: View {
                         .tag(1)
                     
                     ProfileWrapperView(showLogin: $showLogin, guestRefresh: $guestRefresh)
-                                   .tabItem { Label("我的", systemImage: "person") }
-                                   .tag(2)
+                        .tabItem { Label("我的", systemImage: "person") }
+                        .tag(2)
                 }
                 .onChange(of: selectedTab) { newTab in
                     if newTab == 2 {

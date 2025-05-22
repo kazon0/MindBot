@@ -68,7 +68,7 @@ struct GuestView: View {
                         .offset(y: appear ? 0 : 60)
                         .animation(.easeOut(duration: 0.8).delay(0.2), value: appear)
                     
-                    
+                 
                     ZStack {
                         RoundedRectangle(cornerRadius: 40)
                             .foregroundColor(.white.opacity(pulse ? 0.7 : 0.4))
@@ -112,6 +112,11 @@ struct GuestView: View {
                         }
                         .padding(.top, 100)
                     }
+                    Image("GirlThink")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 140)
+                        .offset(x:60,y:165)
                 }
             }
             .ignoresSafeArea(edges: .bottom)

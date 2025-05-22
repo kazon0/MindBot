@@ -8,6 +8,7 @@ class APIManager {
         case invalidURL
         case invalidResponse
         case loginFailed(String)
+        case apiError(String)
         case unknown
 
         var errorDescription: String? {
@@ -15,11 +16,12 @@ class APIManager {
             case .invalidURL: return "无效的URL"
             case .invalidResponse: return "无效的响应"
             case .loginFailed(let message): return message
+            case .apiError(let message): return message
             case .unknown: return "未知错误"
             }
         }
     }
-    
+
     
     // 注册API
     func register(username: String, password: String) async throws {
@@ -342,6 +344,34 @@ extension APIManager {
 
 }
 
+//情绪分析接口
+extension APIManager {
+    func getEmotionAnalysis(for userId: Int) async throws -> EmotionData {
+        let urlStr = baseURL + "/api/api/mood-analysis/analyze/\(userId)"
+        guard let url = URL(string: urlStr) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let token = KeychainHelper.shared.get(for: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+            throw APIError.invalidResponse
+        }
+
+        let decoded = try JSONDecoder().decode(EmotionResponse.self, from: data)
+        guard decoded.code == 200 else {
+            throw APIError.apiError(decoded.message)
+        }
+        return decoded.data
+    }
+}
+
+
 
 
 extension APIManager {
@@ -447,113 +477,4 @@ class KeychainHelper {
     }
     
     
-}
-
-// 网络返回的用户数据结构
-struct LoginResponse: Codable {
-    let code: Int
-    let message: String
-    let data: LoginData?
-}
-
-struct LoginData: Codable {
-    let permissions: [String]
-    let roles: [String]
-    let token: String
-    let user: UserInfo
-}
-
-// MARK: - UserInfoResponse
-struct UserInfoResponse: Codable {
-    let code: Int
-    let message: String
-    let data: UserInfo?
-}
-
-// MARK: - UserInfo
-struct UserInfo: Codable {
-    var id: Int
-    var username: String
-    var password: String?
-    var realName: String?
-    var avatar: String?
-    var phone: String?
-    var email: String?
-    var gender: Int?
-    var status: Int?
-    var createTime: String?
-    var updateTime: String?
-    var roles: [Role]?
-    var permissions: [Permission]?
-}
-
-// MARK: - Role
-struct Role: Codable {
-    let id: Int
-    let name: String
-    let code: String
-    let description: String?
-    let status: Int
-    let createTime: String
-    let updateTime: String
-    let permissions: [Permission]?
-}
-
-// MARK: - Permission
-struct Permission: Codable {
-    let id: Int
-    let name: String
-    let code: String
-    let type: Int
-    let status: Int
-    let parentId: Int
-    let sort: Int
-    let icon: String?
-    let component: String?
-    let path: String?
-    let createTime: String
-    let updateTime: String
-    let children: [Permission]?
-}
-
-struct ChatMessage: Codable, Identifiable {
-    let id: Int64
-    let sessionId: Int64
-    let userId: Int64
-    let senderType: String  // "user" or "ai"
-    let content: String
-    let createTime: String
-}
-
-struct ChatMessageListResponse: Codable {
-    let code: Int
-    let message: String
-    let data: [ChatMessage]
-}
-
-
-struct ChatSession: Identifiable, Codable {
-    let id: Int
-    let userId: Int
-    var title: String
-    let createTime: String
-    let updateTime: String
-}
-
-
-//帖子和评论数据结构
-struct Post: Codable, Identifiable {
-    let id: Int
-    let content: String
-    let isAnonymous: Bool
-    let timestamp: String
-    let user: UserInfo?
-    let comments: [Comment]?
-}
-
-struct Comment: Codable, Identifiable {
-    let id: Int
-    let content: String
-    let timestamp: String
-    let user: UserInfo?
 }

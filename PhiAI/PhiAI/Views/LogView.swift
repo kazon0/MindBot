@@ -82,12 +82,14 @@ struct LogView: View {
                     VStack(spacing: 16) {
                         TextField("请输入用户名", text: $username)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .foregroundColor(.black)
                             .opacity(animate ? 1 : 0)
                             .offset(y: animate ? 0 : 20)
                             .animation(.easeOut(duration: 0.5).delay(0.4), value: animate)
                         
                         SecureField("请输入密码", text: $password)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .foregroundColor(.black)
                             .opacity(animate ? 1 : 0)
                             .offset(y: animate ? 0 : 20)
                             .animation(.easeOut(duration: 0.5).delay(0.4), value: animate)
@@ -137,6 +139,8 @@ struct LogView: View {
                 .padding(.top,80)
                 .foregroundColor(.white.opacity(animate ? 0.7 : 0.4))
                 .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 3)
+                GirlWithButterflyView()
+                
             }
             .ignoresSafeArea(edges: .bottom)
             
@@ -165,6 +169,41 @@ struct LogView: View {
         }
     }
 }
+
+
+struct GirlWithButterflyView: View {
+    @State private var flyPhase: CGFloat = 0
+
+    var body: some View {
+        ZStack {
+            // 小女孩
+            Image("GirlStand")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 130)
+                .offset(x: 240, y: 550)
+
+            // 蝴蝶围绕飞舞
+            Image("Butterfly")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 40, height: 40)
+                .offset(
+                    x: -10+CGFloat(sin(Double(flyPhase)) * 5),
+                    y: 530 + CGFloat(cos(Double(flyPhase * 1.2)) * 12)
+                )
+                .scaleEffect(0.9 + CGFloat(sin(Double(flyPhase * 1))) * 0.08) // 微微缩放模拟拍翅
+                .rotationEffect(.degrees(-20 + sin(Double(flyPhase * 1.5)) * 2))
+                .animation(.linear(duration: 0.02), value: flyPhase)
+        }
+        .onAppear {
+            Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { _ in
+                flyPhase += 0.07
+            }
+        }
+    }
+}
+
 
 
 #Preview {
