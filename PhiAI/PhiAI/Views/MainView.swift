@@ -76,7 +76,7 @@ struct MainView: View {
                         
                     }
                     .navigationDestination(isPresented: $navigateToEmotionAnalysis) {
-                        EmotionAnalysisView()
+                        MoodCalendarView()
                             .environmentObject(appVM)
                     }
 

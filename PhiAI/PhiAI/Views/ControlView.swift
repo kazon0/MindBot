@@ -15,7 +15,7 @@ struct ControlView: View {
                         .tabItem { Label("主页", systemImage: "house") }
                         .tag(0)
  
-                    CreatePostView()
+                    CommunityUIPlaceholderView()
                         .tabItem { Label("社区", systemImage: "message.fill") }
                         .tag(1)
                     
@@ -37,6 +37,15 @@ struct ControlView: View {
                             selectedTab = 0
                         })
                 }
+                .onAppear {
+                    let tabBarAppearance = UITabBarAppearance()
+                    tabBarAppearance.configureWithOpaqueBackground()
+                    tabBarAppearance.backgroundColor=UIColor(Color(#colorLiteral(red: 0.7366558313, green: 0.8424485326, blue: 0.5300986767, alpha: 1))) //自定义tabbar背景色
+                    tabBarAppearance.shadowColor = .clear
+                    //应用到tabbar
+                    UITabBar.appearance().standardAppearance = tabBarAppearance
+                    UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+                }
             } else {
                 ProgressView("正在加载...")
                     .progressViewStyle(CircularProgressViewStyle())
@@ -48,8 +57,6 @@ struct ControlView: View {
         }
     }
 }
-
-
 
 #Preview {
     NavigationView {

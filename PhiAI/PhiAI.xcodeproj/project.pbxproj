@@ -13,6 +13,7 @@
 		7655E7D62DDF2044006B0FB5 /* ChatModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7D52DDF2044006B0FB5 /* ChatModel.swift */; };
 		7655E7D82DDF2096006B0FB5 /* EmotionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7D72DDF2096006B0FB5 /* EmotionModel.swift */; };
 		7655E7DA2DDF20D0006B0FB5 /* CommunityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7D92DDF20D0006B0FB5 /* CommunityModel.swift */; };
+		7655E7DE2DE05D10006B0FB5 /* MoodCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7DD2DE05D10006B0FB5 /* MoodCalendarView.swift */; };
 		76AA29FB2DC9043E003BD2A3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76AA29F02DC9043E003BD2A3 /* Preview Assets.xcassets */; };
 		76AA29FC2DC9043E003BD2A3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76AA29F22DC9043E003BD2A3 /* Assets.xcassets */; };
 		76AA2A012DC9043E003BD2A3 /* PhiAIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA29F72DC9043E003BD2A3 /* PhiAIApp.swift */; };
@@ -39,6 +40,7 @@
 		7655E7D52DDF2044006B0FB5 /* ChatModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatModel.swift; sourceTree = "<group>"; };
 		7655E7D72DDF2096006B0FB5 /* EmotionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmotionModel.swift; sourceTree = "<group>"; };
 		7655E7D92DDF20D0006B0FB5 /* CommunityModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityModel.swift; sourceTree = "<group>"; };
+		7655E7DD2DE05D10006B0FB5 /* MoodCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendarView.swift; sourceTree = "<group>"; };
 		76AA29D42DC8FC46003BD2A3 /* PhiAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhiAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		76AA29F02DC9043E003BD2A3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		76AA29F22DC9043E003BD2A3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -104,8 +106,8 @@
 				76AA2A022DC90445003BD2A3 /* Views */,
 				76AA29F12DC9043E003BD2A3 /* Preview Content */,
 				76AA29F22DC9043E003BD2A3 /* Assets.xcassets */,
-				76AA29F72DC9043E003BD2A3 /* PhiAIApp.swift */,
 				76AA2A2B2DCF2B28003BD2A3 /* APIManager.swift */,
+				76AA29F72DC9043E003BD2A3 /* PhiAIApp.swift */,
 			);
 			path = PhiAI;
 			sourceTree = "<group>";
@@ -113,6 +115,7 @@
 		76AA2A022DC90445003BD2A3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				7655E7DD2DE05D10006B0FB5 /* MoodCalendarView.swift */,
 				7655E7D12DDF1100006B0FB5 /* EmotionAnalysisView.swift */,
 				76AA2A072DC90531003BD2A3 /* MainView.swift */,
 				76AA2A0C2DCA0DE3003BD2A3 /* RegView.swift */,
@@ -239,6 +242,7 @@
 				76AA2A372DD8334B003BD2A3 /* EditUserInfoView.swift in Sources */,
 				76AA2A1F2DCDD461003BD2A3 /* CommunityView.swift in Sources */,
 				7655E7D22DDF1100006B0FB5 /* EmotionAnalysisView.swift in Sources */,
+				7655E7DE2DE05D10006B0FB5 /* MoodCalendarView.swift in Sources */,
 				76AA2A012DC9043E003BD2A3 /* PhiAIApp.swift in Sources */,
 				7655E7DA2DDF20D0006B0FB5 /* CommunityModel.swift in Sources */,
 				7655E7D82DDF2096006B0FB5 /* EmotionModel.swift in Sources */,
