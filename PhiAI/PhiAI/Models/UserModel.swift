@@ -5,7 +5,8 @@
 
 import Foundation
 
-// 网络返回的用户数据结构
+
+// 登录接口返回的整体结构
 struct LoginResponse: Codable {
     let code: Int
     let message: String
@@ -13,24 +14,23 @@ struct LoginResponse: Codable {
 }
 
 struct LoginData: Codable {
-    let permissions: [String]
-    let roles: [String]
-    let token: String
     let user: UserInfo
+    let permissions: [String]?
+    let roles: [String]?
+    let token: String
+    let refreshToken: String
 }
 
-// MARK: - UserInfoResponse
+// 获取用户信息接口返回结构
 struct UserInfoResponse: Codable {
     let code: Int
     let message: String
     let data: UserInfo?
 }
 
-// MARK: - UserInfo
-struct UserInfo: Codable {
+struct UserInfo: Codable, Identifiable {
     var id: Int
     var username: String
-    var password: String?
     var realName: String?
     var avatar: String?
     var phone: String?

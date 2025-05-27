@@ -52,9 +52,7 @@ struct MyView: View {
                 Button("取消", role: .cancel) {}
                 Button("退出") {
                     Task {
-                        await MainActor.run {
-                            appVM.logout()
-                        }
+                        await appVM.logout()
                     }
                 }
             }
@@ -98,7 +96,11 @@ struct MyView: View {
             InfoRow(title: "真实姓名", value: user.realName ?? "未填写")
             InfoRow(title: "邮箱", value: user.email ?? "未填写")
             InfoRow(title: "手机号", value: user.phone ?? "未填写")
-            InfoRow(title: "性别", value: user.gender == 1 ? "男" : "女")
+            InfoRow(title: "性别", value: {
+                if user.gender == 1 { return "男" }
+                else if user.gender == 2 { return "女" }
+                else { return "未知" }
+            }())
             InfoRow(title: "账号状态", value: (user.status == 1) ? "正常" : "禁用")
             InfoRow(title: "注册时间", value: formattedDate(user.createTime))
             InfoRow(title: "最近更新时间", value: formattedDate(user.updateTime))

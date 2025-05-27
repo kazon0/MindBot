@@ -1,5 +1,6 @@
 import CoreData
 import Foundation
+import SwiftUI
 
 @MainActor
 class AppViewModel: ObservableObject {
@@ -16,7 +17,8 @@ class AppViewModel: ObservableObject {
 
     func autoLoginOrGuest() async {
         do {
-            if let token = KeychainHelper.shared.get(for: "authToken"), !token.isEmpty {
+            let userId = UserDefaults.standard.integer(forKey: "currentUserId")
+            if userId > 0 {
                 currentUser = try await APIManager.shared.getUserInfo()
             } else {
                 setGuestUser()
@@ -31,7 +33,7 @@ class AppViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         do {
-            let (_, userInfo) = try await APIManager.shared.login(username: username, password: password)
+            let userInfo = try await APIManager.shared.login(username: username, password: password)
             currentUser = userInfo
         } catch {
             errorMessage = error.localizedDescription
@@ -40,14 +42,16 @@ class AppViewModel: ObservableObject {
         isLoading = false
     }
 
-    func logout() {
-        KeychainHelper.shared.save("", for: "authToken")
-        setGuestUser()
-        errorMessage = nil
-        isUserLoaded = false
-
-        Task {
-            await autoLoginOrGuest()
+    @MainActor
+    func logout() async {
+        do {
+            try await APIManager.shared.logout()
+            KeychainHelper.shared.delete(for: "authToken") // 删除 token
+            setGuestUser()  // 设置成游客状态
+            isUserLoaded = true
+            errorMessage = nil
+        } catch {
+            errorMessage = "退出登录失败: \(error.localizedDescription)"
         }
     }
 
@@ -61,7 +65,10 @@ class AppViewModel: ObservableObject {
             email: nil,
             gender: nil,
             status: nil,
-            roles: []
+            createTime: nil,
+            updateTime: nil,
+            roles: [],
+            permissions: []
         )
     }
 }

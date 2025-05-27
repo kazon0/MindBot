@@ -128,6 +128,8 @@ struct ChatView: View {
                 .padding()
             }
         }
+        .toolbar(.hidden, for: .tabBar)
+        .toolbarBackground(.hidden, for: .tabBar)
         .sheet(isPresented: $showSessionsSheet) {
             NavigationView {
                 List {

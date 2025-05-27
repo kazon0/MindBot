@@ -77,6 +77,7 @@ struct MainView: View {
                     }
                     .navigationDestination(isPresented: $navigateToEmotionAnalysis) {
                         MoodCalendarView()
+                            .navigationBarBackButtonHidden(true)
                             .environmentObject(appVM)
                     }
 

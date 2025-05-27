@@ -14,6 +14,8 @@
 		7655E7D82DDF2096006B0FB5 /* EmotionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7D72DDF2096006B0FB5 /* EmotionModel.swift */; };
 		7655E7DA2DDF20D0006B0FB5 /* CommunityModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7D92DDF20D0006B0FB5 /* CommunityModel.swift */; };
 		7655E7DE2DE05D10006B0FB5 /* MoodCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7DD2DE05D10006B0FB5 /* MoodCalendarView.swift */; };
+		7655E7E92DE59D39006B0FB5 /* MoodRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7E82DE59D39006B0FB5 /* MoodRecord.swift */; };
+		7655E7EB2DE59E01006B0FB5 /* MoodCalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7EA2DE59E01006B0FB5 /* MoodCalendarViewModel.swift */; };
 		76AA29FB2DC9043E003BD2A3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76AA29F02DC9043E003BD2A3 /* Preview Assets.xcassets */; };
 		76AA29FC2DC9043E003BD2A3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76AA29F22DC9043E003BD2A3 /* Assets.xcassets */; };
 		76AA2A012DC9043E003BD2A3 /* PhiAIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA29F72DC9043E003BD2A3 /* PhiAIApp.swift */; };
@@ -41,6 +43,8 @@
 		7655E7D72DDF2096006B0FB5 /* EmotionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmotionModel.swift; sourceTree = "<group>"; };
 		7655E7D92DDF20D0006B0FB5 /* CommunityModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunityModel.swift; sourceTree = "<group>"; };
 		7655E7DD2DE05D10006B0FB5 /* MoodCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendarView.swift; sourceTree = "<group>"; };
+		7655E7E82DE59D39006B0FB5 /* MoodRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodRecord.swift; sourceTree = "<group>"; };
+		7655E7EA2DE59E01006B0FB5 /* MoodCalendarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendarViewModel.swift; sourceTree = "<group>"; };
 		76AA29D42DC8FC46003BD2A3 /* PhiAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhiAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		76AA29F02DC9043E003BD2A3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		76AA29F22DC9043E003BD2A3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -134,6 +138,7 @@
 		76AA2A032DC90457003BD2A3 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				7655E7E82DE59D39006B0FB5 /* MoodRecord.swift */,
 				7655E7D32DDF2005006B0FB5 /* UserModel.swift */,
 				7655E7D52DDF2044006B0FB5 /* ChatModel.swift */,
 				7655E7D72DDF2096006B0FB5 /* EmotionModel.swift */,
@@ -145,6 +150,7 @@
 		76AA2A042DC90465003BD2A3 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				7655E7EA2DE59E01006B0FB5 /* MoodCalendarViewModel.swift */,
 				7655E7CF2DDF10E5006B0FB5 /* EmotionViewModel.swift */,
 				76AA2A142DCA640C003BD2A3 /* AppViewModel.swift */,
 				76AA2A232DCDFAD9003BD2A3 /* ChatViewModel.swift */,
@@ -229,6 +235,8 @@
 				76AA2A0D2DCA0DE3003BD2A3 /* RegView.swift in Sources */,
 				76AA2A152DCA640C003BD2A3 /* AppViewModel.swift in Sources */,
 				76AA2A132DCA40EB003BD2A3 /* ControlView.swift in Sources */,
+				7655E7E92DE59D39006B0FB5 /* MoodRecord.swift in Sources */,
+				7655E7EB2DE59E01006B0FB5 /* MoodCalendarViewModel.swift in Sources */,
 				76AA2A112DCA2EB8003BD2A3 /* MyView.swift in Sources */,
 				76AA2A242DCDFAD9003BD2A3 /* ChatViewModel.swift in Sources */,
 				76AA2A082DC90531003BD2A3 /* MainView.swift in Sources */,
