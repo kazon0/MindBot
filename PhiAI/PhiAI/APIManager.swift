@@ -8,7 +8,7 @@ struct APIResponse<T: Codable>: Codable {
 
 class APIManager {
     static let shared = APIManager()
-    private let baseURL = "http://ec8a6f34.natappfree.cc"
+    private let baseURL = "http://qf83b3fd.natappfree.cc"
     
     enum APIError: Error, LocalizedError {
         case invalidURL
@@ -168,7 +168,7 @@ class APIManager {
     
     // 更新用户信息
     func updateUser(userInfo: UserInfo) async throws {
-        let endpoint = "/api/rbac/user"
+        let endpoint = "/users/\(userInfo.id)"
         guard let url = URL(string: baseURL + endpoint) else {
             throw APIError.invalidURL
         }

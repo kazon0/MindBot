@@ -54,6 +54,12 @@ class AppViewModel: ObservableObject {
             errorMessage = "退出登录失败: \(error.localizedDescription)"
         }
     }
+    
+    @MainActor
+    func updateUser(userInfo: UserInfo) async throws {
+        try await APIManager.shared.updateUser(userInfo: userInfo)
+        self.currentUser = try await APIManager.shared.getUserInfo()
+    }
 
     func setGuestUser() {
         currentUser = UserInfo(

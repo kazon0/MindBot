@@ -58,7 +58,6 @@ struct MainView: View {
                         VStack {
                             HStack(spacing: 40) {
                                 TabBarView(iconName: "情绪日志", action: {
-                                    //跳转到情绪分析界面
                                     if  appVM.currentUser?.id == -1 || appVM.currentUser == nil {
                                         showLogin = true
                                         selectedTab = 2
@@ -71,7 +70,7 @@ struct MainView: View {
                                 TabBarView(iconName: "预约咨询", action: {}, animate: $animate)
                             }
                             
-                            planView(animate: $animate)
+                            planView(animate: $animate,navigateToChat:$navigateToChat,selectedTab:$selectedTab,showLogin:$showLogin)
                         }
                         
                     }
@@ -126,24 +125,54 @@ struct MainView: View {
 }
 
 struct AnimatedImageView: View {
-    let imageNames = ["GirlStudy1", "GirlStudy3", "GirlStudy2", "GirlGame1", "GirlGame2", "GirlGame3"]
-    @State private var currentIndex = 0
-    let timer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
+    let imageNames = ["GirlStudy", "气泡框"]
+    @State private var showBubble = false
+    @State private var animateBubble = false
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            Image(imageNames[currentIndex])
+            // 背景图片（小女孩）
+            Image(imageNames[0])
                 .resizable()
                 .scaledToFit()
                 .cornerRadius(30)
-                .animation(.easeInOut(duration: 3), value: currentIndex)
-        }
-        .onReceive(timer) { _ in
-            currentIndex = (currentIndex + 1) % imageNames.count
+                .onTapGesture {
+                    showBubble = true
+                    animateBubble = false
+                    
+                    // 先显示气泡，再触发动画
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        withAnimation(.interpolatingSpring(stiffness: 100, damping: 10)) {
+                            animateBubble = true
+                        }
+                    }
+
+                    // 几秒后自动隐藏气泡
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+                        withAnimation(.easeOut(duration: 0.4)) {
+                            animateBubble = false
+                        }
+
+                        // 动画完成后移除气泡
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            showBubble = false
+                        }
+                    }
+                }
+
+            // 气泡图片
+            if showBubble {
+                Image(imageNames[1])
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100)
+                    .offset(x: 220, y: animateBubble ? 50 : 20) // 从上往下弹出
+                    .scaleEffect(animateBubble ? 1 : 0.5)
+                    .opacity(animateBubble ? 1 : 0)
+            }
         }
     }
 }
-
 
 
 struct TabBarView: View {
@@ -168,8 +197,13 @@ struct TabBarView: View {
 }
 
 struct planView: View {
+    
     @Binding var animate: Bool
-
+    @Binding var navigateToChat: Bool
+    @EnvironmentObject var appVM: AppViewModel
+    @Binding var selectedTab: Int
+    @Binding var showLogin: Bool
+    
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
@@ -194,7 +228,14 @@ struct planView: View {
                     .lineLimit(nil)
                     .padding(.horizontal, 60)
 
-                Button(action: {}) {
+                Button(action: {
+                    if  appVM.currentUser?.id == -1 || appVM.currentUser == nil {
+                        showLogin = true  // 如果是游客，显示登录界面
+                        selectedTab = 2  // 切换到"我的"标签
+                    } else {
+                        navigateToChat = true
+                    }
+                }) {
                     Text("去生成")
                         .foregroundColor(.white)
                         .frame(width: 200, height: 30)

@@ -5,7 +5,7 @@ struct ControlView: View {
     @State var selectedTab = 0
     @State var showLogin = false
     @State private var guestRefresh = 0
-    
+    @State private var guestRefresh1 = 0
 
     var body: some View {
         ZStack {
@@ -14,8 +14,9 @@ struct ControlView: View {
                     MainView(selectedTab: $selectedTab, showLogin: $showLogin)
                         .tabItem { Label("主页", systemImage: "house") }
                         .tag(0)
- 
-                    CommunityUIPlaceholderView()
+
+                    StickerWallView(guestRefresh1: $guestRefresh1)
+                        .id(guestRefresh1)
                         .tabItem { Label("社区", systemImage: "message.fill") }
                         .tag(1)
                     
@@ -26,6 +27,11 @@ struct ControlView: View {
                 .onChange(of: selectedTab) { newTab in
                     if newTab == 2 {
                         guestRefresh += 1
+                    }
+                }
+                .onChange(of: selectedTab) { newTab in
+                    if newTab == 1 {
+                        guestRefresh1 += 1
                     }
                 }
                 .fullScreenCover(isPresented: $showLogin) {

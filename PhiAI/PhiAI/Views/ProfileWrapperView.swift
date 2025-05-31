@@ -85,7 +85,7 @@ struct GuestView: View {
                                 .offset(y: appear ? 0 : 20)
                                 .animation(.easeOut(duration: 0.5).delay(0.3), value: appear)
 
-                            Text("登录后可享受以下功能：\n✨ 查看完整内容\n✨ 发帖评论互动\n✨ 与MindBot交流")
+                            Text("登录后可享受以下功能：\n✨ 查看完整内容\n✨ 心情日志记录\n✨ 与MindBot交流")
                                 .font(.body)
                                 .multilineTextAlignment(.center)
                                 .foregroundColor(.gray)

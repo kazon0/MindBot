@@ -26,7 +26,7 @@ class MoodCalendarViewModel: ObservableObject {
         case 3: return "😐"
         case 2: return "😢"
         case 1: return "😠"
-        case 0: return "😴"
+        case 0: return "😭"
         default: return ""
         }
     }
@@ -40,13 +40,10 @@ class MoodCalendarViewModel: ObservableObject {
 
     func fetchMoodRecord(for date: Date) async {
         let dateStr = Self.dateString(from: date)
-        print("📥 开始拉取日期 \(dateStr) 的心情记录...")
         do {
             let record = try await APIManager.shared.fetchMoodRecord(for: dateStr)
-            print("✅ 成功拉取到记录: \(record)")
             moodData[dateStr] = record
         } catch {
-            print("❌ 获取心情记录失败：\(error.localizedDescription)")
         }
     }
     
@@ -79,7 +76,6 @@ class MoodCalendarViewModel: ObservableObject {
         let existingRecord = entry(for: date)
 
         if let _ = existingRecord {
-            print(" 已有记录，执行更新")
             await updateMoodRecord(
                 for: date,
                 moodScore: moodScore,
@@ -90,7 +86,6 @@ class MoodCalendarViewModel: ObservableObject {
                 isPrivate: false
             )
         } else {
-            print(" 没有记录，执行创建")
             let record = MoodUploadRequest(
                 recordDate: dateStr,
                 moodScore: moodScore,
@@ -101,12 +96,12 @@ class MoodCalendarViewModel: ObservableObject {
                 isPrivate: false
             )
             do {
-                print("📤 开始上传日期 \(dateStr) 的心情记录：moodScore=\(moodScore), note=\(note)")
+                print(" 开始上传日期 \(dateStr) 的心情记录：moodScore=\(moodScore), note=\(note)")
                 try await APIManager.shared.saveMoodRecord(record)
-                print("✅ 上传成功")
+                print(" 上传成功")
                 await fetchMoodRecord(for: date) // 上传后再拉一次，保持同步
             } catch {
-                print("❌ 上传记录失败：\(error.localizedDescription)")
+                print(" 上传记录失败：\(error.localizedDescription)")
             }
         }
     }
@@ -116,6 +111,7 @@ class MoodCalendarViewModel: ObservableObject {
         Task {
             await saveMoodRecord(for: date, mood: mood, note: note)
         }
+        objectWillChange.send()
     }
     
     //  更新已有的心情记录
@@ -164,7 +160,7 @@ class MoodCalendarViewModel: ObservableObject {
         "😐": 3,
         "😢": 2,
         "😠": 1,
-        "😴": 0
+        "😭": 0
     ]
 }
 
@@ -173,7 +169,7 @@ class MoodEditorViewModel: ObservableObject {
     @Published var selectedMood: String
     @Published var noteText: String
 
-    let moods = ["😊", "😐", "😢", "😠", "😴", "🥳"]
+    let moods = ["😊", "😐", "😢", "😠", "😭", "🥳"]
 
     init(initialMood: String? = nil, initialNote: String? = nil) {
         self.selectedMood = initialMood ?? "😊"

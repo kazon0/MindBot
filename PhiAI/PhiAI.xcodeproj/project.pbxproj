@@ -16,6 +16,10 @@
 		7655E7DE2DE05D10006B0FB5 /* MoodCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7DD2DE05D10006B0FB5 /* MoodCalendarView.swift */; };
 		7655E7E92DE59D39006B0FB5 /* MoodRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7E82DE59D39006B0FB5 /* MoodRecord.swift */; };
 		7655E7EB2DE59E01006B0FB5 /* MoodCalendarViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7EA2DE59E01006B0FB5 /* MoodCalendarViewModel.swift */; };
+		7655E7EF2DE9A1EE006B0FB5 /* StickerWallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7EE2DE9A1EE006B0FB5 /* StickerWallView.swift */; };
+		7655E7F12DE9A257006B0FB5 /* Sticker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7F02DE9A257006B0FB5 /* Sticker.swift */; };
+		7655E7F32DE9A278006B0FB5 /* StickerWallViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7655E7F22DE9A278006B0FB5 /* StickerWallViewModel.swift */; };
+		7655E7F62DE9F82F006B0FB5 /* WaterfallGrid in Frameworks */ = {isa = PBXBuildFile; productRef = 7655E7F52DE9F82F006B0FB5 /* WaterfallGrid */; };
 		76AA29FB2DC9043E003BD2A3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76AA29F02DC9043E003BD2A3 /* Preview Assets.xcassets */; };
 		76AA29FC2DC9043E003BD2A3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 76AA29F22DC9043E003BD2A3 /* Assets.xcassets */; };
 		76AA2A012DC9043E003BD2A3 /* PhiAIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76AA29F72DC9043E003BD2A3 /* PhiAIApp.swift */; };
@@ -45,6 +49,9 @@
 		7655E7DD2DE05D10006B0FB5 /* MoodCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendarView.swift; sourceTree = "<group>"; };
 		7655E7E82DE59D39006B0FB5 /* MoodRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodRecord.swift; sourceTree = "<group>"; };
 		7655E7EA2DE59E01006B0FB5 /* MoodCalendarViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendarViewModel.swift; sourceTree = "<group>"; };
+		7655E7EE2DE9A1EE006B0FB5 /* StickerWallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerWallView.swift; sourceTree = "<group>"; };
+		7655E7F02DE9A257006B0FB5 /* Sticker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sticker.swift; sourceTree = "<group>"; };
+		7655E7F22DE9A278006B0FB5 /* StickerWallViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerWallViewModel.swift; sourceTree = "<group>"; };
 		76AA29D42DC8FC46003BD2A3 /* PhiAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhiAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		76AA29F02DC9043E003BD2A3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		76AA29F22DC9043E003BD2A3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -71,6 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7655E7F62DE9F82F006B0FB5 /* WaterfallGrid in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +127,7 @@
 		76AA2A022DC90445003BD2A3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				7655E7EE2DE9A1EE006B0FB5 /* StickerWallView.swift */,
 				7655E7DD2DE05D10006B0FB5 /* MoodCalendarView.swift */,
 				7655E7D12DDF1100006B0FB5 /* EmotionAnalysisView.swift */,
 				76AA2A072DC90531003BD2A3 /* MainView.swift */,
@@ -138,6 +147,7 @@
 		76AA2A032DC90457003BD2A3 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				7655E7F02DE9A257006B0FB5 /* Sticker.swift */,
 				7655E7E82DE59D39006B0FB5 /* MoodRecord.swift */,
 				7655E7D32DDF2005006B0FB5 /* UserModel.swift */,
 				7655E7D52DDF2044006B0FB5 /* ChatModel.swift */,
@@ -150,6 +160,7 @@
 		76AA2A042DC90465003BD2A3 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				7655E7F22DE9A278006B0FB5 /* StickerWallViewModel.swift */,
 				7655E7EA2DE59E01006B0FB5 /* MoodCalendarViewModel.swift */,
 				7655E7CF2DDF10E5006B0FB5 /* EmotionViewModel.swift */,
 				76AA2A142DCA640C003BD2A3 /* AppViewModel.swift */,
@@ -176,6 +187,7 @@
 			);
 			name = PhiAI;
 			packageProductDependencies = (
+				7655E7F52DE9F82F006B0FB5 /* WaterfallGrid */,
 			);
 			productName = PhiAI;
 			productReference = 76AA29D42DC8FC46003BD2A3 /* PhiAI.app */;
@@ -204,6 +216,9 @@
 			);
 			mainGroup = 76AA29CB2DC8FC46003BD2A3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7655E7F42DE9F82F006B0FB5 /* XCRemoteSwiftPackageReference "WaterfallGrid" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 76AA29D52DC8FC46003BD2A3 /* Products */;
 			projectDirPath = "";
@@ -240,6 +255,7 @@
 				76AA2A112DCA2EB8003BD2A3 /* MyView.swift in Sources */,
 				76AA2A242DCDFAD9003BD2A3 /* ChatViewModel.swift in Sources */,
 				76AA2A082DC90531003BD2A3 /* MainView.swift in Sources */,
+				7655E7EF2DE9A1EE006B0FB5 /* StickerWallView.swift in Sources */,
 				76AA2A1D2DCC94C4003BD2A3 /* ChatView.swift in Sources */,
 				76AA2A172DCA653F003BD2A3 /* ProfileWrapperView.swift in Sources */,
 				7655E7D42DDF2005006B0FB5 /* UserModel.swift in Sources */,
@@ -249,7 +265,9 @@
 				76AA2A0F2DCA1CC0003BD2A3 /* LogView.swift in Sources */,
 				76AA2A372DD8334B003BD2A3 /* EditUserInfoView.swift in Sources */,
 				76AA2A1F2DCDD461003BD2A3 /* CommunityView.swift in Sources */,
+				7655E7F32DE9A278006B0FB5 /* StickerWallViewModel.swift in Sources */,
 				7655E7D22DDF1100006B0FB5 /* EmotionAnalysisView.swift in Sources */,
+				7655E7F12DE9A257006B0FB5 /* Sticker.swift in Sources */,
 				7655E7DE2DE05D10006B0FB5 /* MoodCalendarView.swift in Sources */,
 				76AA2A012DC9043E003BD2A3 /* PhiAIApp.swift in Sources */,
 				7655E7DA2DDF20D0006B0FB5 /* CommunityModel.swift in Sources */,
@@ -468,6 +486,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7655E7F42DE9F82F006B0FB5 /* XCRemoteSwiftPackageReference "WaterfallGrid" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/paololeonardi/WaterfallGrid";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7655E7F52DE9F82F006B0FB5 /* WaterfallGrid */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7655E7F42DE9F82F006B0FB5 /* XCRemoteSwiftPackageReference "WaterfallGrid" */;
+			productName = WaterfallGrid;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 76AA29CC2DC8FC46003BD2A3 /* Project object */;
 }
