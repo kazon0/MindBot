@@ -6,12 +6,23 @@
 import Foundation
 import SwiftUI
 
+extension Date {
+    func formattedString() -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "zh_CN")
+        return formatter.string(from: self)
+    }
+}
+
 @MainActor
 class MoodCalendarViewModel: ObservableObject {
     @Published var moodData: [String: MoodRecordResponse] = [:]
     @Published var selectedDate: Date = Date()
     @Published var currentMonthIndex: Int = 0
     @Published var isLoading = false
+    @Published var statistics: MoodStatistics? = nil
 
     nonisolated static func dateString(from date: Date) -> String {
         let formatter = DateFormatter()
@@ -19,24 +30,35 @@ class MoodCalendarViewModel: ObservableObject {
         return formatter.string(from: date)
     }
 
-    func emoji(for score: Int) -> String {
+    func emojiImageName(for score: Int) -> String {
         switch score {
-        case 5: return "🥳"
-        case 4: return "😊"
-        case 3: return "😐"
-        case 2: return "😢"
-        case 1: return "😠"
-        case 0: return "😭"
+        case 5: return "mood_happy"
+        case 4: return "mood_smile"
+        case 3: return "mood_neutral"
+        case 2: return "mood_sad"
+        case 1: return "mood_angry"
+        case 0: return "mood_cry"
         default: return ""
         }
     }
 
-    func moodEmoji(for date: Date) -> String {
+
+    func moodImageName(for date: Date) -> String? {
         guard let score = moodData[Self.dateString(from: date)]?.moodScore else {
-            return ""
+            return nil
         }
-        return emoji(for: score)
+
+        switch score {
+        case 5: return "mood_happy"
+        case 4: return "mood_smile"
+        case 3: return "mood_neutral"
+        case 2: return "mood_sad"
+        case 1: return "mood_angry"
+        case 0: return "mood_cry"
+        default: return nil
+        }
     }
+
 
     func fetchMoodRecord(for date: Date) async {
         let dateStr = Self.dateString(from: date)
@@ -153,14 +175,52 @@ class MoodCalendarViewModel: ObservableObject {
         let key = Self.dateString(from: date)
         return moodData[key]
     }
+    
+    func loadMoodStatistics(for date: Date) async {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        
+        do {
+            let stats = try await APIManager.shared.fetchMoodStatistics(year: year, month: month)
+            self.statistics = stats
+            print(" 获取统计成功: \(stats)")
+        } catch {
+            print(" 获取统计失败: \(error.localizedDescription)")
+        }
+    }
+    
+    func count(for score: Int, in distribution: [String: Int]) -> Int {
+        return distribution["\(score)"] ?? 0
+    }
 
+    var happyCount: Int {
+        count(for: 5, in: statistics?.scoreDistribution ?? [:])
+    }
+    var smileCount: Int {
+        count(for: 4, in: statistics?.scoreDistribution ?? [:])
+    }
+    var neutralCount: Int {
+        count(for: 3, in: statistics?.scoreDistribution ?? [:])
+    }
+    var sadCount: Int {
+        count(for: 2, in: statistics?.scoreDistribution ?? [:])
+    }
+    var angryCount: Int {
+        count(for: 1, in: statistics?.scoreDistribution ?? [:])
+    }
+    var cryCount: Int {
+        count(for: 0, in: statistics?.scoreDistribution ?? [:])
+    }
+
+    
     let moodScoreMapping: [String: Int] = [
-        "🥳": 5,
-        "😊": 4,
-        "😐": 3,
-        "😢": 2,
-        "😠": 1,
-        "😭": 0
+        "mood_happy": 5,
+        "mood_smile": 4,
+        "mood_neutral": 3,
+        "mood_sad": 2,
+        "mood_angry": 1,
+        "mood_cry": 0
     ]
 }
 
@@ -169,10 +229,10 @@ class MoodEditorViewModel: ObservableObject {
     @Published var selectedMood: String
     @Published var noteText: String
 
-    let moods = ["😊", "😐", "😢", "😠", "😭", "🥳"]
+    let moods = ["mood_happy", "mood_smile", "mood_neutral", "mood_sad", "mood_angry", "mood_cry"]
 
     init(initialMood: String? = nil, initialNote: String? = nil) {
-        self.selectedMood = initialMood ?? "😊"
+        self.selectedMood = initialMood ?? "mood_smile"
         self.noteText = initialNote ?? ""
     }
 

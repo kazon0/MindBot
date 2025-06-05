@@ -17,9 +17,9 @@ class StickerWallViewModel: ObservableObject {
             Sticker(id: UUID(), imageName: "猫睡觉", message: "今晚早睡啦明天有早八", author: "千花", timestamp: Date()),
             Sticker(id: UUID(), imageName: "猫伤心", message: "复习进度总是落后，每天都感觉喘不过气...！", author: "Kazon", timestamp: Date()),
             Sticker(id: UUID(), imageName: "猫生气", message: "爱你哟", author: "小美", timestamp: Date()),
-            Sticker(id: UUID(), imageName: "猫开心", message: "继续闪耀！", author: "阿星", timestamp: Date()),
-            Sticker(id: UUID(), imageName: "猫睡觉", message: "爱你哟", author: "小美", timestamp: Date()),
-            Sticker(id: UUID(), imageName: "猫伤心", message: "考研压力好大", author: "阿星", timestamp: Date())
+            Sticker(id: UUID(), imageName: "猫开心", message: "继续闪耀！", author: "", timestamp: Date()),
+            Sticker(id: UUID(), imageName: "猫睡觉", message: "我也爱你", author: "阿星", timestamp: Date()),
+            Sticker(id: UUID(), imageName: "猫伤心", message: "考研压力好大", author: "小飞飞", timestamp: Date())
         ]
         
         // 给每个贴纸随机赋值颜色和尺寸

@@ -1,6 +1,15 @@
 {
-  "originHash" : "8646e25e180920a065232acf8b4ca4c4fdf4a57ffbb51e24fcf155613761b82d",
+  "originHash" : "5850425aca730e863374bf16f97fbe229e9d5295130d6120f26c118e283dadab",
   "pins" : [
+    {
+      "identity" : "starscream",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/daltoniam/Starscream",
+      "state" : {
+        "revision" : "c6bfd1af48efcc9a9ad203665db12375ba6b145a",
+        "version" : "4.0.8"
+      }
+    },
     {
       "identity" : "waterfallgrid",
       "kind" : "remoteSourceControl",

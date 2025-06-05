@@ -15,7 +15,6 @@ struct StickerWallView: View {
     @Binding var guestRefresh1 : Int
     
     var body: some View {
-        NavigationView {
             ZStack {
                 // 背景渐变
                 LinearGradient(
@@ -32,7 +31,7 @@ struct StickerWallView: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 40)
                         .foregroundColor(Color(#colorLiteral(red: 0.737, green: 0.842, blue: 0.530, alpha: 1)))
-                        .frame(height: 700)
+                        .frame(maxHeight: .infinity)
                         .shadow(color: Color.gray.opacity(animate ? 0.1 : 0.2), radius: animate ? 20 : 30, x: 0, y: -40)
                         .opacity(animate ? 1 : 0)
                         .offset(y: animate ? 0 : 40)
@@ -100,7 +99,7 @@ struct StickerWallView: View {
                                 .padding(.horizontal, 4)
                             }
                         }
-                        .frame(height: 700) // 限制内容高度在白色卡片区域
+                        .frame(maxHeight: .infinity)
                         .clipShape(RoundedRectangle(cornerRadius: 50)) // 内容裁剪在圆角卡片内
                         .padding(.vertical)
                         .opacity(animate ? 1 : 0)
@@ -126,14 +125,16 @@ struct StickerWallView: View {
                 .offset(x:130,y:300)
             }
             .sheet(isPresented: $showPostSheet) {
-                StickerPostView(viewModel: viewModel)
+                NavigationView {
+                    StickerPostView(viewModel: viewModel)
+                }
             }
             .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    animate = true
+                }
                 viewModel.fetchStickers()
-                animate = true
             }
-        }
-
     }
     
     func pseudoRandomValue(id: String, range: ClosedRange<CGFloat>) -> CGFloat {

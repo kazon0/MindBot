@@ -9,6 +9,7 @@ class AppViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isUserLoaded = false
     
+    static let shared = AppViewModel()
     
     // 用户是否登录
     var isLoggedIn: Bool {

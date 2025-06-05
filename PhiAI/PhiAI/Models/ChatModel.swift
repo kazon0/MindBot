@@ -10,8 +10,21 @@ struct ChatMessage: Codable, Identifiable {
     let sessionId: Int64
     let userId: Int64
     let senderType: String
-    let content: String
+    var content: String
+    let audioUrl: String?
     let createTime: String
+    let updateTime: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case sessionId
+        case userId
+        case senderType = "role"  
+        case content
+        case audioUrl
+        case createTime
+        case updateTime
+    }
 }
 
 struct ChatMessageListResponse: Codable {
@@ -27,4 +40,13 @@ struct ChatSession: Identifiable, Codable {
     var title: String
     let createTime: String
     let updateTime: String
+    let deleted: Int
+}
+
+struct RequestParams {
+    let sessionId, userId: Int
+}
+
+struct AudioRequestBody: Codable {
+    let audio: String
 }

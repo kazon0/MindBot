@@ -40,3 +40,15 @@ struct UpdateMoodRecordRequest: Codable {
     var isPrivate: Bool
 }
 
+struct MoodStatisticsResponse: Codable {
+    let code: Int
+    let message: String
+    let data: MoodStatistics
+}
+
+struct MoodStatistics: Codable {
+    let avgScore: Double
+    let scoreDistribution: [String: Int]
+    let tagStatistics: [String: Int] 
+}
+

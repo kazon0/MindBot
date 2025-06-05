@@ -2,14 +2,16 @@ import SwiftUI
 
 struct ControlView: View {
     @EnvironmentObject var appVM: AppViewModel
+    @EnvironmentObject var appointmentManager: AppointmentPlatformManager
     @State var selectedTab = 0
     @State var showLogin = false
     @State private var guestRefresh = 0
     @State private var guestRefresh1 = 0
+    @State private var showContent = false
 
     var body: some View {
         ZStack {
-            if appVM.isUserLoaded {
+            if showContent {
                 TabView(selection: $selectedTab) {
                     MainView(selectedTab: $selectedTab, showLogin: $showLogin)
                         .tabItem { Label("主页", systemImage: "house") }
@@ -35,31 +37,56 @@ struct ControlView: View {
                     }
                 }
                 .fullScreenCover(isPresented: $showLogin) {
-                        LogView(onLogin: { user in
-                            appVM.currentUser = user
-                            showLogin = false
-                        }, onCancel: {
-                            showLogin = false
-                            selectedTab = 0
-                        })
+                    LogView(onLogin: { user in
+                        appVM.currentUser = user
+                        showLogin = false
+                    }, onCancel: {
+                        showLogin = false
+                        selectedTab = 0
+                    })
                 }
                 .onAppear {
                     let tabBarAppearance = UITabBarAppearance()
                     tabBarAppearance.configureWithOpaqueBackground()
-                    tabBarAppearance.backgroundColor=UIColor(Color(#colorLiteral(red: 0.7366558313, green: 0.8424485326, blue: 0.5300986767, alpha: 1))) //自定义tabbar背景色
+                    tabBarAppearance.backgroundColor = UIColor(Color(#colorLiteral(red: 0.7366558313, green: 0.8424485326, blue: 0.5300986767, alpha: 1)))
                     tabBarAppearance.shadowColor = .clear
-                    //应用到tabbar
                     UITabBar.appearance().standardAppearance = tabBarAppearance
                     UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
                 }
-            } else {
-                ProgressView("正在加载...")
-                    .progressViewStyle(CircularProgressViewStyle())
-                    .padding()
+                // 加载动画
+                .overlay(
+                    Group {
+                        if !appVM.isUserLoaded {
+                            ZStack {
+                                HStack(spacing: 16) {
+                                    Text("Loading...")
+                                        .font(.headline)
+                                        .italic()
+                                        .foregroundColor(.gray)
+                                    ProgressView() // 系统加载圈
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .gray))
+                                        .scaleEffect(1.4)
+                                }
+                                .padding(24)
+                                .background(.ultraThinMaterial) // 半透明磨砂背景
+                                .cornerRadius(20)
+                                .shadow(radius: 10)
+                            }
+                            .offset(y:20)
+                            .transition(.opacity)
+                        }
+                    }
+                )
+
             }
         }
-        .task {
-            await appVM.autoLoginOrGuest()  //主动调用，开始加载用户
+        .onAppear {
+            showContent = true
+            if !appVM.isUserLoaded {
+                Task {
+                    await appVM.autoLoginOrGuest()
+                }
+            }
         }
     }
 }
@@ -68,5 +95,6 @@ struct ControlView: View {
     NavigationView {
         ControlView()
             .environmentObject(AppViewModel())
+            .environmentObject(AppointmentPlatformManager())
     }
 }

@@ -6,6 +6,12 @@ struct ErrorMessage: Identifiable {
     let message: String
 }
 
+struct WSResponse: Codable {
+    let data: String
+    let type: String
+}
+
+
 @MainActor
 class ChatViewModel: ObservableObject {
     @Published var messages: [ChatMessage] = []
@@ -15,42 +21,64 @@ class ChatViewModel: ObservableObject {
 
     @Published var sessions: [ChatSession] = []
     @Published var currentSessionId: Int64? = nil
+    @Published var userId: Int64? = nil
     
+    private var webSocketClient = AIWebSocketClientStarscream()
+    private var currentAIContent = ""
+    @Published var isReceivingMessage: Bool = false
+    private var placeholderMessageId: Int64?
+
+
     func fetchSessions() async {
         isLoading = true
         errorMessage = nil
+        
+        guard let userId = userId, userId > 0 else {
+            errorMessage = ErrorMessage(message: "用户未登录或无效用户ID")
+            isLoading = false
+            print("[fetchSessions] 无效用户ID，无法获取会话")
+            return
+        }
+        
         do {
-            let fetchedSessions = try await APIManager.shared.getAllChatSessions()
-            print(" 当前会话列表：\(fetchedSessions.map { "\($0.title)(\($0.id))" })")
+            print("[fetchSessions] 开始获取会话列表，userId: \(userId)")
+            let fetchedSessions = try await APIManager.shared.getAllChatSessions(userId: Int(userId))
+            print("[fetchSessions] 当前会话列表：\(fetchedSessions.map { "\($0.title)(\($0.id))" })")
 
             if fetchedSessions.isEmpty {
-                print(" 无会话，准备创建新会话")
-                let newSession = try await APIManager.shared.createChatSession()
+                print("[fetchSessions] 无会话，准备创建新会话")
+                let newSession = try await APIManager.shared.createChatSession(userId: Int(userId))
                 sessions = [newSession]
+                await MainActor.run {
+                    self.sessions = [newSession]
+                }
                 await selectSession(sessionId: Int64(newSession.id))
             } else {
-                print(" 加载已有会话")
-                sessions = fetchedSessions
+                print("[fetchSessions] 加载已有会话")
+                await MainActor.run {
+                    self.sessions = fetchedSessions
+                }
                 if let first = fetchedSessions.first {
                     await selectSession(sessionId: Int64(first.id))
                 }
             }
 
             isLoading = false
-            print(" fetchSessions() 完成")
+            print("[fetchSessions] 完成")
         } catch {
             errorMessage = ErrorMessage(message: "加载会话失败：\(error.localizedDescription)")
             isLoading = false
-            print(" fetchSessions() 失败：\(error.localizedDescription)")
+            print("[fetchSessions] 失败：\(error.localizedDescription)")
         }
     }
+
 
     func fetchMessages(sessionId: Int64) async {
         print(" 调用 fetchMessages(sessionId: \(sessionId))")
         isLoading = true
         errorMessage = nil
         do {
-            let fetchedMessages = try await APIManager.shared.getChatHistory(sessionId: Int(sessionId))
+            let fetchedMessages = try await APIManager.shared.getChatHistory(sessionId: sessionId)
             await MainActor.run {
                 self.messages = fetchedMessages
             }
@@ -66,7 +94,7 @@ class ChatViewModel: ObservableObject {
     func selectSession(sessionId: Int64) async {
         print(" 选择会话 sessionId: \(sessionId)")
         do {
-            let fetched = try await APIManager.shared.getChatHistory(sessionId: Int(sessionId))
+            let fetched = try await APIManager.shared.getChatHistory(sessionId: sessionId)
             await MainActor.run {
                 self.messages = fetched
                 self.currentSessionId = sessionId
@@ -78,6 +106,22 @@ class ChatViewModel: ObservableObject {
         }
     }
 
+    func createNewSessionAndSelect() async {
+        do {
+            guard let userId = userId else { return }
+            let newSession = try await APIManager.shared.createChatSession(userId: Int(userId))
+            await MainActor.run {
+                self.sessions.insert(newSession, at: 0)
+                self.currentSessionId = Int64(newSession.id)
+                self.messages = []
+            }
+        } catch {
+            errorMessage = ErrorMessage(message: "新建会话失败：\(error.localizedDescription)")
+            print(" 创建新会话失败：\(error.localizedDescription)")
+        }
+    }
+
+    
     func deleteSession(session: ChatSession) async {
         print(" 删除会话 id:\(session.id) 标题:\(session.title)")
         do {
@@ -98,7 +142,8 @@ class ChatViewModel: ObservableObject {
                         await selectSession(sessionId: Int64(newCurrent.id))
                     } else {
                         print(" 无会话，创建新会话")
-                        let newSession = try await APIManager.shared.createChatSession()
+                        guard let userId = userId else { return }
+                        let newSession = try await APIManager.shared.createChatSession(userId: Int(userId))
                         sessions = [newSession]
                         await selectSession(sessionId: Int64(newSession.id))
                     }
@@ -112,60 +157,112 @@ class ChatViewModel: ObservableObject {
             print(" 删除会话异常: \(error.localizedDescription)")
         }
     }
+    
+    init() {
+         // 在初始化时绑定 WebSocket 回调
+         webSocketClient.onReceiveMessage = { [weak self] text in
+             Task { @MainActor in
+                 await self?.handleWebSocketMessage(text)
+             }
+         }
+     }
+     
+     func connectWebSocket(token: String) {
+         webSocketClient.connect(token: token)
+     }
+     
+     func sendMessage() async {
+         guard let sessionId = currentSessionId else { return }
+         let trimmedText = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+         guard !trimmedText.isEmpty else { return }
+         
+         // 1. 先添加用户消息
+         let nowString = Self.currentTimeString()
+         let currentUserId = Int64(userId ?? 0)
+         let userMessage = ChatMessage(
+             id: Int64.random(in: Int64.min...Int64.max),
+             sessionId: sessionId,
+             userId: currentUserId,
+             senderType: "user",
+             content: trimmedText,
+             audioUrl: nil,
+             createTime: nowString,
+             updateTime: nowString
+         )
+         messages.append(userMessage)
+         inputText = ""
+         
+         // 2. 插入“AI 正在思考...”的占位消息，保存它的 ID
+         let placeholderId = Int64.random(in: Int64.min...Int64.max)
+         let placeholderMessage = ChatMessage(
+             id: placeholderId,
+             sessionId: sessionId,
+             userId: 0,
+             senderType: "assistant",
+             content: "MindBot正在思考...",
+             audioUrl: nil,
+             createTime: nowString,
+             updateTime: nowString
+         )
+         messages.append(placeholderMessage)
+         placeholderMessageId = placeholderId
+         currentAIContent = ""
+         
+         // 3. 通过 WebSocket 发送用户输入
+         webSocketClient.send(message: trimmedText, sessionId: currentSessionId)
+     }
+     
+     // 处理 WebSocket 分片消息
+     private func handleWebSocketMessage(_ text: String) async {
+         guard let data = text.data(using: .utf8),
+               let response = try? JSONDecoder().decode(WSResponse.self, from: data) else {
+             return
+         }
+         
+         switch response.type {
+         case "CONTENT":
+             // 收到首个 CONTENT 分片，将占位消息内容替换为首个片段；后续分片追加
+             if let placeholderId = placeholderMessageId,
+                let index = messages.firstIndex(where: { $0.id == placeholderId }) {
+                 if currentAIContent.isEmpty {
+                     // 首次CONTENT：用第一个片段替换占位消息内容
+                     messages[index].content = response.data
+                 } else {
+                     // 后续片段：追加到已有内容末尾
+                     messages[index].content += response.data
+                 }
+                 currentAIContent += response.data
+             } else {
+                 // 如果没有占位消息（可能超时或替换失败），直接追加
+                 let nowString = Self.currentTimeString()
+                 let aiSegment = ChatMessage(
+                     id: Int64.random(in: Int64.min...Int64.max),
+                     sessionId: currentSessionId ?? 0,
+                     userId: 0,
+                     senderType: "assistant",
+                     content: response.data,
+                     audioUrl: nil,
+                     createTime: nowString,
+                     updateTime: nowString
+                 )
+                 messages.append(aiSegment)
+             }
+             
+         case "DONE":
+             // 收到 DONE 表示本次回复结束，清空临时状态
+             placeholderMessageId = nil
+             currentAIContent = ""
+             
+         default:
+             break
+         }
+     }
+     
 
-    @MainActor
-    func sendMessage() async {
-        print(" 发送消息")
-        guard let sessionId = currentSessionId else {
-            errorMessage = ErrorMessage(message: "未选择会话")
-            print(" 未选择会话，取消发送")
-            return
-        }
-
-        let trimmedText = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedText.isEmpty else {
-            print(" 输入为空，取消发送")
-            return
-        }
-
-        print(" 用户消息: \(trimmedText)")
-
-        let userMessage = ChatMessage(
-            id: Int64.random(in: Int64.min...Int64.max),
-            sessionId: sessionId,
-            userId: 0,
-            senderType: "user",
-            content: trimmedText,
-            createTime: ISO8601DateFormatter().string(from: Date())
-        )
-
-        messages.append(userMessage)
-        inputText = ""
-
-        do {
-            let aiReplyText = try await APIManager.shared.sendMessageToChatBot(message: trimmedText, sessionId: Int(sessionId))
-            print(" AI 回复: \(aiReplyText)")
-            let aiMessage = ChatMessage(
-                id: Int64.random(in: Int64.min...Int64.max),
-                sessionId: sessionId,
-                userId: 0,
-                senderType: "ai",
-                content: aiReplyText,
-                createTime: ISO8601DateFormatter().string(from: Date())
-            )
-            messages.append(aiMessage)
-        } catch {
-            let fallbackMessage = ChatMessage(
-                id: Int64.random(in: Int64.min...Int64.max),
-                sessionId: sessionId,
-                userId: 0,
-                senderType: "ai",
-                content: "（AI回复失败）",
-                createTime: ISO8601DateFormatter().string(from: Date())
-            )
-            messages.append(fallbackMessage)
-            errorMessage = ErrorMessage(message: "AI 回复失败：\(error.localizedDescription)")
-            print(" AI 回复失败：\(error.localizedDescription)")
-        }
+    private static func currentTimeString() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter.string(from: Date())
     }
+
 }

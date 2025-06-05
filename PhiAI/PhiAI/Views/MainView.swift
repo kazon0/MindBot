@@ -7,6 +7,11 @@ struct MainView: View {
     @State private var navigateToChat = false
     @State private var navigateToEmotionAnalysis = false
     
+    @State private var showAppointmentLoginSheet = false
+    @State private var showAppointmentMainSheet = false
+
+    @EnvironmentObject var appointmentManager: AppointmentPlatformManager
+    
     @Binding var selectedTab: Int
     @Binding var showLogin: Bool
 
@@ -43,7 +48,7 @@ struct MainView: View {
                     .padding(.bottom,20)
                     
                     .navigationDestination(isPresented: $navigateToChat) {
-                        ChatView(viewModel: ChatViewModel())
+                        ChatView()
                         
                     }
                     
@@ -67,7 +72,19 @@ struct MainView: View {
                                 }, animate: $animate)
                                 
                                 TabBarView(iconName: "心灵鸡汤", action: {}, animate: $animate)
-                                TabBarView(iconName: "预约咨询", action: {}, animate: $animate)
+                                TabBarView(iconName: "预约咨询", action: {
+                                    if appVM.currentUser?.id == -1 || appVM.currentUser == nil {
+                                        // 主账号未登录，跳主账号登录
+                                        showLogin = true
+                                        selectedTab = 2
+                                    } else if !appointmentManager.isLoggedIn {
+                                        // 主账号登录了，但预约平台未登录
+                                        showAppointmentLoginSheet = true
+                                    } else {
+                                        // 都登录了，跳预约主界面
+                                        showAppointmentMainSheet = true
+                                    }
+                                }, animate: $animate)
                             }
                             
                             planView(animate: $animate,navigateToChat:$navigateToChat,selectedTab:$selectedTab,showLogin:$showLogin)
@@ -79,9 +96,18 @@ struct MainView: View {
                             .navigationBarBackButtonHidden(true)
                             .environmentObject(appVM)
                     }
-
                 }
             }
+            .fullScreenCover(isPresented: $showAppointmentLoginSheet) {
+                AppointmentLoginView()
+                    .environmentObject(appointmentManager)
+            }
+
+            .fullScreenCover(isPresented: $showAppointmentMainSheet) {
+                AppointmentView()
+                    .environmentObject(appointmentManager)
+            }
+
             .onAppear(perform: addAnimation)
             .ignoresSafeArea(edges: .bottom)
             .padding(.bottom, -10)
@@ -97,8 +123,8 @@ struct MainView: View {
                 .background(animate ? Color(#colorLiteral(red: 0.960, green: 1, blue: 0.962, alpha: 1)) : Color.white)
                 .foregroundColor(Color(#colorLiteral(red: 0.787, green: 0.775, blue: 0.790, alpha: 1)))
 
-            Text("Press")
-                .font(.title3)
+            Text("Start")
+                .font(.title2)
                 .fontWeight(.heavy)
                 .frame(maxWidth: .infinity)
                 .frame(height: 55)
@@ -215,14 +241,14 @@ struct planView: View {
 
             VStack(spacing: 10) {
                 HStack {
-                    Text("我的疗愈计划✨")
+                    Text("和MindBot聊聊✨")
                         .font(.title2)
                         .fontWeight(.heavy)
                     Spacer()
                 }
                 .padding(.horizontal, 70)
 
-                Text("输入困惑，MindBot就可以生成最适合你的疗愈计划!")
+                Text("输入困惑，MindBot就可以来帮助你解决它哟!")
                     .font(.body)
                     .foregroundColor(.gray)
                     .lineLimit(nil)
@@ -236,9 +262,9 @@ struct planView: View {
                         navigateToChat = true
                     }
                 }) {
-                    Text("去生成")
+                    Text("聊一聊")
                         .foregroundColor(.white)
-                        .frame(width: 200, height: 30)
+                        .frame(width: 160, height: 30)
                         .background(Color.accentColor)
                         .cornerRadius(10)
                         .shadow(radius: 2)
@@ -327,6 +353,7 @@ struct TypingText: View {
             NavigationView {
                 MainView(selectedTab: $selectedTab, showLogin: $showLogin)
                     .environmentObject(AppViewModel())
+                    .environmentObject(AppointmentPlatformManager())
             }
         }
     }

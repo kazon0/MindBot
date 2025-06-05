@@ -38,6 +38,7 @@ struct MyView: View {
                         } else if let user = appVM.currentUser {
                             userProfileSection(user: user)
                             userInfoCard(user: user)
+                            MoodStatisticsCard()
                             logoutButton
                         }
                         Spacer()
@@ -77,6 +78,7 @@ struct MyView: View {
             }
         }
     }
+    
 
     private func userProfileSection(user: UserInfo) -> some View {
         HStack(spacing: 10) {
