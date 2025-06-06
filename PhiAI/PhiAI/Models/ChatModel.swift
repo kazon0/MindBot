@@ -50,3 +50,10 @@ struct RequestParams {
 struct AudioRequestBody: Codable {
     let audio: String
 }
+
+struct RenameSessionResponse: Codable {
+    let code: Int
+    let message: String
+    let data: Bool
+}
+

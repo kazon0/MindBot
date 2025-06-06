@@ -19,7 +19,7 @@ struct ControlView: View {
 
                     StickerWallView(guestRefresh1: $guestRefresh1)
                         .id(guestRefresh1)
-                        .tabItem { Label("社区", systemImage: "message.fill") }
+                        .tabItem { Label("社区", systemImage: "ellipsis.message.fill") }
                         .tag(1)
                     
                     ProfileWrapperView(showLogin: $showLogin, guestRefresh: $guestRefresh)

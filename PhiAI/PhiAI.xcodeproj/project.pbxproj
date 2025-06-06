@@ -49,7 +49,12 @@
 		76DC4DE62DF03FD500B3F5B6 /* AppointmentAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DE52DF03FD500B3F5B6 /* AppointmentAPI.swift */; };
 		76DC4DE82DF1356500B3F5B6 /* DoctorListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DE72DF1356500B3F5B6 /* DoctorListViewModel.swift */; };
 		76DC4DEA2DF149E100B3F5B6 /* AppointmentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DE92DF149E100B3F5B6 /* AppointmentViewModel.swift */; };
-		76DC4DEC2DF1777500B3F5B6 /* ResourceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DEB2DF1777500B3F5B6 /* ResourceModel.swift */; };
+		76DC4DEE2DF178BA00B3F5B6 /* ResourceAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DED2DF178BA00B3F5B6 /* ResourceAPI.swift */; };
+		76DC4DF02DF1796100B3F5B6 /* ResourceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DEF2DF1796100B3F5B6 /* ResourceViewModel.swift */; };
+		76DC4DF22DF1798E00B3F5B6 /* ResourceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DF12DF1798E00B3F5B6 /* ResourceView.swift */; };
+		76DC4DF42DF17D2E00B3F5B6 /* Resource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DF32DF17D2E00B3F5B6 /* Resource.swift */; };
+		76DC4DF62DF17E2500B3F5B6 /* ResourceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DF52DF17E2500B3F5B6 /* ResourceDetailView.swift */; };
+		76DC4DF82DF208DF00B3F5B6 /* ChatPetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DF72DF208DF00B3F5B6 /* ChatPetView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -108,7 +113,12 @@
 		76DC4DE52DF03FD500B3F5B6 /* AppointmentAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppointmentAPI.swift; sourceTree = "<group>"; };
 		76DC4DE72DF1356500B3F5B6 /* DoctorListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoctorListViewModel.swift; sourceTree = "<group>"; };
 		76DC4DE92DF149E100B3F5B6 /* AppointmentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppointmentViewModel.swift; sourceTree = "<group>"; };
-		76DC4DEB2DF1777500B3F5B6 /* ResourceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceModel.swift; sourceTree = "<group>"; };
+		76DC4DED2DF178BA00B3F5B6 /* ResourceAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceAPI.swift; sourceTree = "<group>"; };
+		76DC4DEF2DF1796100B3F5B6 /* ResourceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceViewModel.swift; sourceTree = "<group>"; };
+		76DC4DF12DF1798E00B3F5B6 /* ResourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceView.swift; sourceTree = "<group>"; };
+		76DC4DF32DF17D2E00B3F5B6 /* Resource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resource.swift; sourceTree = "<group>"; };
+		76DC4DF52DF17E2500B3F5B6 /* ResourceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceDetailView.swift; sourceTree = "<group>"; };
+		76DC4DF72DF208DF00B3F5B6 /* ChatPetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPetView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,6 +176,9 @@
 		76AA2A022DC90445003BD2A3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				76DC4DF72DF208DF00B3F5B6 /* ChatPetView.swift */,
+				76DC4DF52DF17E2500B3F5B6 /* ResourceDetailView.swift */,
+				76DC4DF12DF1798E00B3F5B6 /* ResourceView.swift */,
 				76DC4DDF2DF011FB00B3F5B6 /* AppointmentView.swift */,
 				76DC4DCA2DEC9DB100B3F5B6 /* AppointmentLoginView.swift */,
 				7655E7F92DEB724B006B0FB5 /* DottedUnderlineLabel.swift */,
@@ -189,6 +202,7 @@
 		76AA2A032DC90457003BD2A3 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				76DC4DF32DF17D2E00B3F5B6 /* Resource.swift */,
 				7655E7F02DE9A257006B0FB5 /* Sticker.swift */,
 				7655E7E82DE59D39006B0FB5 /* MoodRecord.swift */,
 				7655E7D32DDF2005006B0FB5 /* UserModel.swift */,
@@ -211,7 +225,7 @@
 				7655E7EA2DE59E01006B0FB5 /* MoodCalendarViewModel.swift */,
 				76AA2A142DCA640C003BD2A3 /* AppViewModel.swift */,
 				76AA2A232DCDFAD9003BD2A3 /* ChatViewModel.swift */,
-				76DC4DEB2DF1777500B3F5B6 /* ResourceModel.swift */,
+				76DC4DEF2DF1796100B3F5B6 /* ResourceViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -225,6 +239,7 @@
 				76DC4DD62DEF503300B3F5B6 /* MoodCalendarAPI.swift */,
 				76DC4DD82DEF507500B3F5B6 /* UserAPI.swift */,
 				76DC4DE52DF03FD500B3F5B6 /* AppointmentAPI.swift */,
+				76DC4DED2DF178BA00B3F5B6 /* ResourceAPI.swift */,
 			);
 			path = API;
 			sourceTree = "<group>";
@@ -309,6 +324,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				76DC4DF82DF208DF00B3F5B6 /* ChatPetView.swift in Sources */,
 				7655E7FA2DEB724B006B0FB5 /* DottedUnderlineLabel.swift in Sources */,
 				76DC4DE22DF03E4900B3F5B6 /* AppointmentPlatformManager.swift in Sources */,
 				76DC4DE62DF03FD500B3F5B6 /* AppointmentAPI.swift in Sources */,
@@ -323,6 +339,7 @@
 				76AA2A112DCA2EB8003BD2A3 /* MyView.swift in Sources */,
 				76DC4DC92DEC8DB300B3F5B6 /* MoodStatisticsCard.swift in Sources */,
 				76AA2A242DCDFAD9003BD2A3 /* ChatViewModel.swift in Sources */,
+				76DC4DF02DF1796100B3F5B6 /* ResourceViewModel.swift in Sources */,
 				76DC4DD72DEF503300B3F5B6 /* MoodCalendarAPI.swift in Sources */,
 				76DC4DDE2DEF58BF00B3F5B6 /* AIWebSocketClientStarscream.swift in Sources */,
 				76DC4DE42DF03F4C00B3F5B6 /* Appointment.swift in Sources */,
@@ -340,7 +357,10 @@
 				76DC4DCD2DEF2EE200B3F5B6 /* SpeechRecognizer.swift in Sources */,
 				7655E7F12DE9A257006B0FB5 /* Sticker.swift in Sources */,
 				7655E7DE2DE05D10006B0FB5 /* MoodCalendarView.swift in Sources */,
-				76DC4DEC2DF1777500B3F5B6 /* ResourceModel.swift in Sources */,
+				76DC4DF42DF17D2E00B3F5B6 /* Resource.swift in Sources */,
+				76DC4DF62DF17E2500B3F5B6 /* ResourceDetailView.swift in Sources */,
+				76DC4DEE2DF178BA00B3F5B6 /* ResourceAPI.swift in Sources */,
+				76DC4DF22DF1798E00B3F5B6 /* ResourceView.swift in Sources */,
 				76DC4DEA2DF149E100B3F5B6 /* AppointmentViewModel.swift in Sources */,
 				76DC4DD52DEF435D00B3F5B6 /* ChatAPI.swift in Sources */,
 				76AA2A012DC9043E003BD2A3 /* PhiAIApp.swift in Sources */,

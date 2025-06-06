@@ -159,10 +159,11 @@ struct MyView: View {
     }
 
     private var placeholderAvatar: some View {
-        Image(systemName: "person.circle.fill")
+        Image("avatar1")
             .resizable()
             .frame(width: 60, height: 60)
             .foregroundColor(.accentColor)
+            .cornerRadius(180)
     }
 
 }

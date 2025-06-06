@@ -182,9 +182,9 @@ struct AppointmentLoginView: View {
             )
 
         .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $navigateToAppointment) {
-            AppointmentView()
-        }
+        .navigationDestination(isPresented: $navigateToAppointment, destination: {
+            AppointmentView().environmentObject(appointmentManager)
+        })
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 animate = true
@@ -218,11 +218,9 @@ struct AppointmentLoginView: View {
             appointmentManager.token = response
             appointmentManager.isLoggedIn = true
             alertMessage = "登录成功！"
+            print("登录成功，准备跳转 AppointmentView")
             showingAlert = true
-            // 延迟跳转，给用户一点时间看到弹窗
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                navigateToAppointment = true
-            }
+            navigateToAppointment = true
         } catch {
             alertMessage = "登录失败：\(error.localizedDescription)"
             showingAlert = true

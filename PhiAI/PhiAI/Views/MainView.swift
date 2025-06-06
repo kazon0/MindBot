@@ -3,13 +3,13 @@ import SwiftUI
 struct MainView: View {
     @State var animate: Bool = false
     
-    @EnvironmentObject var appVM: AppViewModel
     @State private var navigateToChat = false
+    @State private var navigateToResource = false
     @State private var navigateToEmotionAnalysis = false
-    
     @State private var showAppointmentLoginSheet = false
     @State private var showAppointmentMainSheet = false
-
+    
+    @EnvironmentObject var appVM: AppViewModel
     @EnvironmentObject var appointmentManager: AppointmentPlatformManager
     
     @Binding var selectedTab: Int
@@ -48,8 +48,7 @@ struct MainView: View {
                     .padding(.bottom,20)
                     
                     .navigationDestination(isPresented: $navigateToChat) {
-                        ChatView()
-                        
+                        ChatView(selectedTab: $selectedTab, showLogin: $showLogin)
                     }
                     
                     ZStack(alignment: .top) {
@@ -71,7 +70,14 @@ struct MainView: View {
                                     }
                                 }, animate: $animate)
                                 
-                                TabBarView(iconName: "心灵鸡汤", action: {}, animate: $animate)
+                                TabBarView(iconName: "心灵鸡汤", action: {
+                                    if  appVM.currentUser?.id == -1 || appVM.currentUser == nil {
+                                        showLogin = true
+                                        selectedTab = 2
+                                    } else {
+                                        navigateToResource = true
+                                    }
+                                }, animate: $animate)
                                 TabBarView(iconName: "预约咨询", action: {
                                     if appVM.currentUser?.id == -1 || appVM.currentUser == nil {
                                         // 主账号未登录，跳主账号登录
@@ -98,6 +104,9 @@ struct MainView: View {
                     }
                 }
             }
+            .fullScreenCover(isPresented: $navigateToResource) {
+                ResourceListView()
+            }
             .fullScreenCover(isPresented: $showAppointmentLoginSheet) {
                 AppointmentLoginView()
                     .environmentObject(appointmentManager)
@@ -107,7 +116,6 @@ struct MainView: View {
                 AppointmentView()
                     .environmentObject(appointmentManager)
             }
-
             .onAppear(perform: addAnimation)
             .ignoresSafeArea(edges: .bottom)
             .padding(.bottom, -10)

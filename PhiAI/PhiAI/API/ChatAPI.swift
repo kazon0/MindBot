@@ -177,3 +177,34 @@ extension APIManager {
     }
 
 }
+
+extension APIManager {
+
+    func renameChatSession(sessionId: Int, newTitle: String) async throws {
+        let endpoint = "/api/chat/session/\(sessionId)/title?title=\(newTitle.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"
+        guard let url = URL(string: baseURL + endpoint) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let token = KeychainHelper.shared.read(for: "authToken") {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        request.httpBody = nil  // 空 body
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let decoded = try JSONDecoder().decode(RenameSessionResponse.self, from: data)
+
+        guard decoded.code == 200 else {
+            throw APIError.serverError(decoded.message)
+        }
+
+        guard decoded.data else {
+            throw APIError.serverError("重命名失败：返回 false")
+        }
+    }
+}

@@ -23,10 +23,18 @@ struct AppointmentView: View {
     
     @State private var selectedDate: Date = Date().startOfDay()
     @State private var selectedDoctorID: String?
-      @State private var selectedSlot: String?
+    @State private var selectedSlot: String?
     @StateObject private var viewModel = DoctorListViewModel()
+    
     @EnvironmentObject var appointmentManager: AppointmentPlatformManager
     @StateObject private var submitViewModel = AppointmentViewModel()
+    @Environment(\.presentationMode) var presentationMode
+    
+    @State private var showInputSheet = false
+    @State private var inputPhoneNumber = ""
+    @State private var inputQQ = ""
+    @State private var inputProblem = ""
+    
     @State private var showAlert = false
     @State private var alertMessage = ""
     
@@ -48,103 +56,151 @@ struct AppointmentView: View {
     var body: some View {
         let availableDoctors = viewModel.doctors
         NavigationView {
-            VStack {
-                HStack{
-                    Text("预约咨询列表")
-                        .font(.title)
-                        .padding(.trailing,200)
-                }
-                .padding(.top,20)
-                // 日期横向选择
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(days, id: \.self) { day in
-                            dateButton(for: day)
+            ZStack {
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(#colorLiteral(red: 0.8626629114, green: 0.9756165147, blue: 0.7313965559, alpha: 1)).opacity(0.5),
+                        Color(#colorLiteral(red: 0.8042530417, green: 0.9252516627, blue: 0.5908532143, alpha: 1)),
+                        Color(#colorLiteral(red: 0.4738111496, green: 0.752263248, blue: 0.3751039505, alpha: 1)).opacity(0.5)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                VStack {
+                    HStack{
+                        // 顶部返回按钮
+                        Button(action: {
+                            withAnimation {
+                                presentationMode.wrappedValue.dismiss()
+                            }
+                        }) {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.accentColor)
+                                .font(.headline)
+                                .padding()
+                                .background(Color.white.opacity(0.8))
+                                .clipShape(Circle())
                         }
-                    }
-                    //.padding(.top,80)
-                    .padding(.horizontal)
-                }
-                Divider()
-                    .padding(.vertical, 8)
-                
-                
-                if viewModel.isLoading {
-                    Spacer()
-                    ProgressView("正在加载医生列表...")
-                        .padding()
-                    Spacer()
-                } else if let error = viewModel.errorMessage {
-                    Spacer()
-                    Text(error)
-                        .foregroundColor(.red)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .offset(y: 90)
-                    Spacer()
-                } else if availableDoctors.isEmpty {
-                    Spacer()
-                    Text("该日期无可预约医生")
-                        .foregroundColor(.secondary)
-                        .offset(y: 90)
-                    Spacer()
-                } else {
-                    List(viewModel.doctors) { doctor in
-                        DoctorRowView(
-                            doctor: doctor,
-                            selectedDoctorID: selectedDoctorID,
-                            selectedSlot: selectedSlot
-                        ) { id, slot in
-                            selectedDoctorID = id
-                            selectedSlot = slot
-                        }
-                    }
-                    .listStyle(PlainListStyle())
-                }
-
-                
-                Spacer()
-                
-                // 预约按钮
-                Button(action:{
-                    Task {
-                        await handleAppointment()
-                    }
-                }) {
-                    Text("确认预约")
-                        .font(.title3)
-                        .padding()
-                        .frame(width: 200, height: 60)
-                        .foregroundColor(.white)
-                        .background(Color.accentColor)
-                        .cornerRadius(15)
+                        .padding(.leading)
+                        Spacer()
                         
+                        Text("预约咨询列表")
+                            .font(.title)
+                            .bold()
+                            .padding(.trailing,90)
+                        
+                        Image("Check")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40)
+                            .padding(.trailing,20)
+                            .shadow(radius: 3)
+                    }
+                    .padding(.top,20)
+                    // 日期横向选择
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(days, id: \.self) { day in
+                                dateButton(for: day)
+                            }
+                        }
+                    }
+                    .padding()
+                    Divider()
+                        .padding(.vertical, 8)
+                    
+                    ZStack{
+                        Image("List")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 400)
+                            .shadow(radius: 5)
+                        if viewModel.isLoading {
+                            Spacer()
+                            ProgressView("正在加载医生列表...")
+                                .padding()
+                            Spacer()
+                        } else if let error = viewModel.errorMessage {
+                            Spacer()
+                            Text(error)
+                                .foregroundColor(.red)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            Spacer()
+                        } else if availableDoctors.isEmpty {
+                            Spacer()
+                            Text("该日期无可预约医生")
+                                .foregroundColor(.secondary)
+                            Spacer()
+                        } else {
+                            GeometryReader { geometry in
+                            ScrollView {
+                                LazyVStack(spacing: 12) {
+                                    ForEach(viewModel.doctors) { doctor in
+                                        DoctorRowView(
+                                            doctor: doctor,
+                                            selectedDoctorID: selectedDoctorID,
+                                            selectedSlot: selectedSlot
+                                        ) { id, slot in
+                                            selectedDoctorID = id
+                                            selectedSlot = slot
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                            .frame(height: 600)
+                            .offset(x:60,y:30)
+                        }
+                            .frame(width: 300)
+                        }
+                    }
+                    .alert(isPresented: $showAlert) {
+                        Alert(title: Text("预约结果"), message: Text(getAppointmentMessage()), dismissButton: .default(Text("确定")))
+                    }
+ 
+                    Spacer()
+                    
+                    // 预约按钮
+                    Button(action: {
+                        showInputSheet = true // 弹出表单
+                    }) {
+                        Text("确认预约")
+                            .font(.title3)
+                            .padding()
+                            .frame(width: 160, height: 50)
+                            .foregroundColor(.white)
+                            .background(Color.accentColor)
+                            .cornerRadius(15)
+                    }
+                    .shadow(color: .gray.opacity(0.5),radius: 5)
+                    .disabled(!canMakeAppointment || submitViewModel.isLoading)
+                    .padding()
+                    .sheet(isPresented: $showInputSheet) {
+                        inputSheetView()
+                    }
+                    
                 }
-                .alert("预约结果", isPresented: $showAlert) {
-                    Button("确定", role: .cancel) { }
-                } message: {
-                    Text(getAppointmentMessage())
-                }
-                .disabled(!canMakeAppointment || submitViewModel.isLoading)
-                .padding()
-                   
-            }
-            .task {
-                if let token = appointmentManager.token {
-                    print(" token 不为空，开始拉取医生列表：\(token)")
-                    await viewModel.fetchDoctors(for: selectedDate, sessionId: token)
-                } else {
-                    print(" token 为空，跳过 fetchDoctors")
-                }
-            }
-            .onChange(of: selectedDate) { newDate in
-                Task {
+                .task {
                     if let token = appointmentManager.token {
-                        await viewModel.fetchDoctors(for: newDate, sessionId: token)
+                        print(" token 不为空，开始拉取医生列表：\(token)")
+                        await viewModel.fetchDoctors(for: selectedDate, sessionId: token)
+                    } else {
+                        print(" token 为空，跳过 fetchDoctors")
+                    }
+                }
+                .onChange(of: selectedDate) { newDate in
+                    Task {
+                        if let token = appointmentManager.token {
+                            await viewModel.fetchDoctors(for: newDate, sessionId: token)
+                        }
                     }
                 }
             }
         }
+        .navigationBarHidden(true)
+        .navigationBarBackButtonHidden(true)
     }
     
     var canMakeAppointment: Bool {
@@ -181,7 +237,7 @@ struct AppointmentView: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 14)
-        .background(isSelected ? Color.accentColor : Color.gray.opacity(0.2))
+        .background(isSelected ? Color.accentColor :  Color.white.opacity(0.8))
         .cornerRadius(10)
         .onTapGesture {
             selectedDate = day
@@ -205,15 +261,48 @@ struct AppointmentView: View {
         let request = AppointmentRequest(
             date: dateStr,
             doctorName: doc.name,
-            phoneNumber: "17268568903",
-            problem: "我最近有些焦虑",
-            qqId: "1034961091",
+            phoneNumber: inputPhoneNumber,
+            problem: inputProblem,
+            qqId: inputQQ,
             sessionId: token,
             timeSlot: slot
         )
 
         await submitViewModel.makeAppointment(request)
         showAlert = true
+    }
+    
+    @ViewBuilder
+    func inputSheetView() -> some View {
+        NavigationView {
+            Form {
+                Section(header: Text("联系方式")) {
+                    TextField("手机号", text: $inputPhoneNumber)
+                        .keyboardType(.phonePad)
+                    TextField("QQ号", text: $inputQQ)
+                        .keyboardType(.numberPad)
+                }
+                Section(header: Text("问题描述")) {
+                    TextField("请简要描述您的问题", text: $inputProblem)
+                }
+            }
+            .navigationTitle("填写预约信息")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("提交") {
+                        Task {
+                            await handleAppointment()
+                            showInputSheet = false
+                        }
+                    }
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") {
+                        showInputSheet = false
+                    }
+                }
+            }
+        }
     }
 
 }
@@ -228,6 +317,7 @@ struct DoctorRowView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(doctor.name)
                 .font(.headline)
+                .foregroundColor(.primary) // 保持字体颜色正常
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
                     ForEach(doctor.availableTimes, id: \.self) { slot in
@@ -237,6 +327,7 @@ struct DoctorRowView: View {
             }
         }
         .padding(.vertical, 6)
+
     }
 
     func slotView(slot: String) -> some View {
@@ -244,13 +335,18 @@ struct DoctorRowView: View {
         return Text(slot)
             .padding(.vertical, 6)
             .padding(.horizontal, 12)
-            .background(isSelected ? Color.accentColor : Color.gray.opacity(0.3))
+            .background(isSelected ? Color.accentColor.opacity(0.8) : Color.gray.opacity(0.2))
             .foregroundColor(isSelected ? .white : .primary)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.accentColor.opacity(0.3), lineWidth: isSelected ? 0 : 1)
+            )
             .cornerRadius(8)
             .onTapGesture {
                 onSelect(doctor.id, slot)
             }
     }
+
 }
 
 

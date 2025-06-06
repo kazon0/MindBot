@@ -7,7 +7,13 @@ struct ChatView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var speechRecognizer = SpeechRecognizer()
     @State private var isRecording = false
+    @State private var showRenameAlert = false
+    @State private var renameText = ""
+    @State private var sessionToRename: ChatSession? = nil
     
+    @Binding var selectedTab: Int
+    @Binding var showLogin: Bool
+
     
     private var currentSessionTitle: String {
         if let session = viewModel.sessions.first(where: { Int64($0.id) == viewModel.currentSessionId }) {
@@ -62,9 +68,36 @@ struct ChatView: View {
                 .onReceive(speechRecognizer.$transcribedText) { text in
                     viewModel.inputText = text
                 }
+                
+                if viewModel.showSuggestionBubble {
+                    ChatSuggestionBubble(
+                        selectedTab:$selectedTab,showLogin:$showLogin,
+                        onClose: {
+                            viewModel.showSuggestionBubble = false
+                        }
+                    )
+                    .offset(x: -30, y: 200) // 放在小女孩上方合适位置
+                    .transition(.scale)
+                }
+                ChatPetView(state: viewModel.animationState)
+                    .offset(x:105,y:295)
             }
         }
         .navigationBarBackButtonHidden(true)
+        .alert("重命名会话", isPresented: $showRenameAlert) {
+            TextField("新名称", text: $renameText)
+            Button("确定") {
+                if let session = sessionToRename {
+                    Task {
+                        await viewModel.renameSession(session: session, newTitle: renameText)
+                        await viewModel.fetchSessions()
+                    }
+                }
+            }
+            Button("取消", role: .cancel) { }
+        } message: {
+            Text("请输入新的会话名称")
+        }
     }
     
     // MARK: - Subviews
@@ -193,6 +226,8 @@ struct ChatView: View {
     }
     
     private var inputArea: some View {
+        ZStack{
+            
         HStack {
             Button {
                 Task {
@@ -220,9 +255,12 @@ struct ChatView: View {
                     .background(isRecording ? Color.red : Color(#colorLiteral(red: 0, green: 0.886633575, blue: 0.7161186934, alpha: 1)))
                     .clipShape(Circle())
             }
-
+            
             TextField("聊一聊吧...", text: $viewModel.inputText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .onChange(of: viewModel.inputText) { newValue in
+                    viewModel.animationState = newValue.isEmpty ? .idle : .listening
+                }
                 .onSubmit {
                     let trimmed = viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines)
                     if !trimmed.isEmpty {
@@ -233,6 +271,8 @@ struct ChatView: View {
                 }
             
             Button {
+                let trimmed = viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return }
                 Task {
                     await viewModel.sendMessage()
                 }
@@ -245,8 +285,8 @@ struct ChatView: View {
             }
             .disabled(viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
+        .offset(y:5)
         .padding()
-        .offset(y: 10)
         .ignoresSafeArea()
         .background(
             LinearGradient(
@@ -255,25 +295,35 @@ struct ChatView: View {
             )
         )
     }
+    }
     
     private var sessionsSheet: some View {
         NavigationView {
             List {
                 Section(header: Text("历史会话")) {
                     ForEach(viewModel.sessions) { session in
-                        SessionRow(session: session,
-                                   isSelected: Int64(session.id) == viewModel.currentSessionId) {
-                            Task {
-                                await viewModel.selectSession(sessionId: Int64(session.id))
-                                await MainActor.run {
-                                    showSessionsSheet = false
+                        SessionRow(
+                            session: session,
+                            isSelected: Int64(session.id) == viewModel.currentSessionId,
+                            onSelect: {
+                                Task {
+                                    await viewModel.selectSession(sessionId: Int64(session.id))
+                                    await MainActor.run {
+                                        showSessionsSheet = false
+                                    }
                                 }
+                            },
+                            onDelete: {
+                                Task {
+                                    await deleteSafely(session: session)
+                                }
+                            },
+                            onRename: {
+                                renameText = session.title
+                                sessionToRename = session
+                                showRenameAlert = true
                             }
-                        } onDelete: {
-                            Task {
-                                await deleteSafely(session: session)
-                            }
-                        }
+                        )
                     }
                 }
             }
@@ -409,7 +459,8 @@ struct SessionRow: View {
     let isSelected: Bool
     let onSelect: () -> Void
     let onDelete: () -> Void
-    
+    let onRename: () -> Void
+
     var body: some View {
         HStack {
             Text(session.title)
@@ -423,12 +474,21 @@ struct SessionRow: View {
         .onTapGesture {
             onSelect()
         }
-        .swipeActions {
+        .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
                 onDelete()
             } label: {
                 Label("删除", systemImage: "trash")
             }
         }
+        .swipeActions(edge: .leading) {
+            Button {
+                onRename()
+            } label: {
+                Label("重命名", systemImage: "pencil")
+            }
+            .tint(.orange)
+        }
     }
 }
+

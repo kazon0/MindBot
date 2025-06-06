@@ -6,11 +6,48 @@ struct ErrorMessage: Identifiable {
     let message: String
 }
 
-struct WSResponse: Codable {
-    let data: String
+struct WSResponse: Decodable {
+    let data: WSData
     let type: String
 }
 
+enum WSData: Decodable {
+    case string(String)
+    case int(Int)
+
+    var stringValue: String {
+        switch self {
+        case .string(let str): return str
+        case .int(let i): return String(i)
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let str = try? container.decode(String.self) {
+            self = .string(str)
+        } else if let int = try? container.decode(Int.self) {
+            self = .int(int)
+        } else {
+            throw DecodingError.typeMismatch(WSData.self, DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "WSData must be String or Int"))
+        }
+    }
+}
+
+struct SuggestionItem: Identifiable {
+    let id = UUID()
+    let title: String
+    let action: () -> Void
+}
+
+enum ChatAnimationState {
+    case idle         // 静止
+    case listening    // 倾听中（用户输入中）
+    case thinking     // AI 正在思考
+    case speaking     // AI 正在说话
+}
 
 @MainActor
 class ChatViewModel: ObservableObject {
@@ -27,6 +64,12 @@ class ChatViewModel: ObservableObject {
     private var currentAIContent = ""
     @Published var isReceivingMessage: Bool = false
     private var placeholderMessageId: Int64?
+    
+    @Published var animationState: ChatAnimationState = .idle
+    
+    @Published var showSuggestionBubble = false
+    
+    @Published var suggestions: [SuggestionItem] = []
 
 
     func fetchSessions() async {
@@ -103,6 +146,21 @@ class ChatViewModel: ObservableObject {
         } catch {
             errorMessage = ErrorMessage(message: "加载会话消息失败：\(error.localizedDescription)")
             print(" selectSession 失败：\(error.localizedDescription)")
+        }
+    }
+    
+    func renameSession(session: ChatSession, newTitle: String) async {
+        do {
+            try await APIManager.shared.renameChatSession(sessionId: session.id, newTitle: newTitle)
+            if let index = sessions.firstIndex(where: { $0.id == session.id }) {
+                await MainActor.run {
+                    sessions[index].title = newTitle
+                }
+            }
+            print(" 会话重命名成功：\(newTitle)")
+        } catch {
+            errorMessage = ErrorMessage(message: "重命名失败：\(error.localizedDescription)")
+            print(" 重命名失败：\(error.localizedDescription)")
         }
     }
 
@@ -209,7 +267,11 @@ class ChatViewModel: ObservableObject {
          currentAIContent = ""
          
          // 3. 通过 WebSocket 发送用户输入
+         animationState = .thinking
          webSocketClient.send(message: trimmedText, sessionId: currentSessionId)
+         
+ 
+
      }
      
      // 处理 WebSocket 分片消息
@@ -225,13 +287,14 @@ class ChatViewModel: ObservableObject {
              if let placeholderId = placeholderMessageId,
                 let index = messages.firstIndex(where: { $0.id == placeholderId }) {
                  if currentAIContent.isEmpty {
+                    animationState = .speaking // 首次收到，开始“说话”
                      // 首次CONTENT：用第一个片段替换占位消息内容
-                     messages[index].content = response.data
+                     messages[index].content = response.data.stringValue
                  } else {
                      // 后续片段：追加到已有内容末尾
-                     messages[index].content += response.data
+                     messages[index].content += response.data.stringValue
                  }
-                 currentAIContent += response.data
+                 currentAIContent += response.data.stringValue
              } else {
                  // 如果没有占位消息（可能超时或替换失败），直接追加
                  let nowString = Self.currentTimeString()
@@ -240,7 +303,7 @@ class ChatViewModel: ObservableObject {
                      sessionId: currentSessionId ?? 0,
                      userId: 0,
                      senderType: "assistant",
-                     content: response.data,
+                     content: response.data.stringValue,
                      audioUrl: nil,
                      createTime: nowString,
                      updateTime: nowString
@@ -250,8 +313,16 @@ class ChatViewModel: ObservableObject {
              
          case "DONE":
              // 收到 DONE 表示本次回复结束，清空临时状态
+             
              placeholderMessageId = nil
              currentAIContent = ""
+             // 延迟2秒后再设置为idle
+             Task { @MainActor in
+                 try? await Task.sleep(nanoseconds: 2_000_000_000) // 2秒
+                 self.animationState = .idle
+             }
+             
+             showSuggestionBubble = true
              
          default:
              break
