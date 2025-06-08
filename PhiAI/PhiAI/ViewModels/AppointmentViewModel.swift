@@ -17,20 +17,26 @@ class AppointmentViewModel: ObservableObject {
         isLoading = true
         isSuccess = false
         errorMessage = nil
-        print(" 开始预约请求，请求参数：\(request)")
+        appointmentResponse = nil
+
+        print("开始预约请求，请求参数：\(request)")
 
         do {
             let response = try await APIManager.shared.makeAppointment(request)
             appointmentResponse = response
             isSuccess = true
-            print(" 预约成功：\(response)")
+            print("预约成功：\(response)")
         } catch {
+            isSuccess = false
             errorMessage = error.localizedDescription
-            print(" 预约失败：\(error.localizedDescription)")
+            print("预约失败：\(error.localizedDescription)")
         }
 
         isLoading = false
-        print(" 预约流程结束")
+        print("预约流程结束")
     }
+
+    
+    
 }
 

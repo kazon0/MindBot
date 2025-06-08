@@ -3,6 +3,7 @@ import SwiftUI
 struct ChatView: View {
     @StateObject private var viewModel = ChatViewModel()
     @EnvironmentObject var appVM: AppViewModel
+    @EnvironmentObject var appointmentManager: AppointmentPlatformManager
     @State private var showSessionsSheet = false
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var speechRecognizer = SpeechRecognizer()
@@ -11,9 +12,17 @@ struct ChatView: View {
     @State private var renameText = ""
     @State private var sessionToRename: ChatSession? = nil
     
+    @State private var animate = false
+    
     @Binding var selectedTab: Int
     @Binding var showLogin: Bool
-
+    
+    @State private var showAppointmentLoginSheet = false
+    @State private var showAppointmentMainSheet = false
+    
+    @StateObject var moodVM = SessionMoodViewModel()
+    @State private var showBubble = false
+    @State private var bubblePosition: CGPoint = .zero
     
     private var currentSessionTitle: String {
         if let session = viewModel.sessions.first(where: { Int64($0.id) == viewModel.currentSessionId }) {
@@ -45,7 +54,6 @@ struct ChatView: View {
                     }
                 }
                 .onAppear {
-                    //KeychainHelper.shared.save("test-token", for: "authToken")
                     if let token = KeychainHelper.shared.read(for: "authToken") {
                         viewModel.connectWebSocket(token: token)
                     }
@@ -53,7 +61,7 @@ struct ChatView: View {
                         viewModel.userId = Int64(userId)
                     }
                 }
-
+                
                 .toolbar(.hidden, for: .tabBar)
                 .toolbarBackground(.hidden, for: .tabBar)
                 .sheet(isPresented: $showSessionsSheet) {
@@ -68,21 +76,67 @@ struct ChatView: View {
                 .onReceive(speechRecognizer.$transcribedText) { text in
                     viewModel.inputText = text
                 }
-                
+                ZStack{
                 if viewModel.showSuggestionBubble {
                     ChatSuggestionBubble(
-                        selectedTab:$selectedTab,showLogin:$showLogin,
+                        selectedTab: $selectedTab,
+                        showLogin: $showLogin,
+                        showAppointmentLoginSheet: $showAppointmentLoginSheet,
+                        showAppointmentMainSheet: $showAppointmentMainSheet,
                         onClose: {
                             viewModel.showSuggestionBubble = false
                         }
                     )
-                    .offset(x: -30, y: 200) // 放在小女孩上方合适位置
+                    .offset(x: -30, y: 200)
                     .transition(.scale)
+                    .environmentObject(appVM)
+                    .environmentObject(appointmentManager)
                 }
+            }
+                .fullScreenCover(isPresented: $showAppointmentLoginSheet, onDismiss: {
+                    viewModel.showSuggestionBubble = false
+                }) {
+                    AppointmentLoginView()
+                        .environmentObject(appointmentManager)
+                    }
+
+                    .fullScreenCover(isPresented: $showAppointmentMainSheet, onDismiss: {
+                        viewModel.showSuggestionBubble = false
+                    }) {
+                        AppointmentView()
+                            .environmentObject(appointmentManager)
+                    }
+
+
+                // 桌宠
                 ChatPetView(state: viewModel.animationState)
-                    .offset(x:105,y:295)
+                    .onTapGesture {
+                        viewModel.animationState = .thinking
+                        Task {
+                            if let sessionId = viewModel.currentSessionId {
+                                await moodVM.fetchAnalysis(for: Int(sessionId))
+                            }
+                            if let analysis = moodVM.analysis {
+                                let fullText = "\(analysis.analysisDescription)\n\n建议：\(analysis.suggestion)"
+                                moodVM.moodTextToDisplay = fullText
+                                moodVM.showMoodPopup = true
+                            }
+                        }
+                    }
+                    .offset(x: 105, y: 295 + (animate ? 0 : 40))
+                    .opacity(animate ? 1 : 0)
+                    .animation(.easeOut(duration: 1).delay(0.4), value: animate)
+
+                // 情绪分析气泡
+                MoodBubbleView(fullText: moodVM.moodTextToDisplay,
+                               isVisible: $moodVM.showMoodPopup)
+                    .offset(x: 30, y: 90) // 根据桌宠位置调整
+            }
+            .onAppear {
+                animate = true
             }
         }
+
         .navigationBarBackButtonHidden(true)
         .alert("重命名会话", isPresented: $showRenameAlert) {
             TextField("新名称", text: $renameText)
@@ -100,8 +154,7 @@ struct ChatView: View {
         }
     }
     
-    // MARK: - Subviews
-    
+
     private func backgroundView(size: CGSize) -> some View {
         ZStack {
             Image("ChatBackground")
@@ -122,6 +175,7 @@ struct ChatView: View {
     private var topToolbar: some View {
         ZStack {
             HStack(spacing: 16) {
+
                 Button {
                     withAnimation {
                         presentationMode.wrappedValue.dismiss()
@@ -140,6 +194,36 @@ struct ChatView: View {
                 
                 Spacer()
                 
+                Menu {
+                    Button {
+                        viewModel.modelType = "deepseek-r1"
+                    } label: {
+                        Label("DeepSeek R1", systemImage: viewModel.modelType == "deepseek-r1" ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(viewModel.modelType == "deepseek-r1" ? .purple : .primary)
+                    }
+                    
+                    Button {
+                        viewModel.modelType = "deepseek-v3"
+                    } label: {
+                        Label("DeepSeek V3", systemImage: viewModel.modelType == "deepseek-v3" ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(viewModel.modelType == "deepseek-v3" ? .purple : .primary)
+                    }
+                    
+                    Button {
+                        viewModel.modelType = "openai"
+                    } label: {
+                        Label("OpenAI", systemImage: viewModel.modelType == "openai" ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(viewModel.modelType == "openai" ? .purple : .primary)
+                    }
+                } label: {
+                    Image(systemName: "brain.head.profile")
+                        .font(.title2)
+                        .frame(width: 40, height: 40)
+                        .background(Color.purple.opacity(0.6))
+                        .foregroundColor(.white)
+                        .clipShape(Circle())
+                }
+
                 Button {
                     showSessionsSheet = true
                 } label: {
@@ -259,12 +343,18 @@ struct ChatView: View {
             TextField("聊一聊吧...", text: $viewModel.inputText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .onChange(of: viewModel.inputText) { newValue in
-                    viewModel.animationState = newValue.isEmpty ? .idle : .listening
+                    if viewModel.animationState == .idle || viewModel.animationState == .listening
+                        || viewModel.animationState == .speaking {
+                        viewModel.animationState = newValue.isEmpty ? .idle : .listening
+                    }
+                    // 如果是 thinking 保持当前状态不变
                 }
+
                 .onSubmit {
                     let trimmed = viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines)
                     if !trimmed.isEmpty {
                         Task {
+                            viewModel.animationState = .thinking
                             await viewModel.sendMessage()
                         }
                     }
@@ -274,6 +364,7 @@ struct ChatView: View {
                 let trimmed = viewModel.inputText.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !trimmed.isEmpty else { return }
                 Task {
+                    viewModel.animationState = .thinking
                     await viewModel.sendMessage()
                 }
             } label: {
@@ -418,21 +509,42 @@ struct AssistantMessageView: View {
 
 struct UserMessageView: View {
     let message: ChatMessage
-    
+    @StateObject private var moodVM = MessageMoodViewModel()
+
     var body: some View {
         HStack(alignment: .top){
             VStack(alignment: .trailing, spacing: 4) {
-                Text(message.content)
-                    .padding()
-                    .background(Color.accentColor.opacity(0.75))
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                
+                ZStack(alignment: .topTrailing) {
+                    Text(message.content)
+                        .padding()
+                        .background(Color.accentColor.opacity(0.75))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .onLongPressGesture {
+                            Task {
+                                await moodVM.fetchMood(for: Int(message.id))
+                            }
+                        }
+
+                    if moodVM.showMoodBubble, let desc = moodVM.moodDescription {
+                        Text(desc)
+                            .font(.caption)
+                            .padding(6)
+                            .background(Color.yellow.opacity(0.5))
+                            .foregroundColor(.black)
+                            .cornerRadius(8)
+                            .shadow(radius: 2)
+                            .transition(.opacity)
+                            .offset(x: 0, y: -36)
+                            .animation(.easeInOut(duration: 0.3), value: moodVM.showMoodBubble)
+                    }
+                }
+
                 Text(formatTime(message.createTime))
                     .font(.caption)
                     .foregroundColor(.gray)
             }
-            
+
             Image("avatar1")
                 .resizable()
                 .scaledToFit()

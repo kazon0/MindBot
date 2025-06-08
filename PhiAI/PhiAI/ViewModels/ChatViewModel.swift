@@ -70,6 +70,8 @@ class ChatViewModel: ObservableObject {
     @Published var showSuggestionBubble = false
     
     @Published var suggestions: [SuggestionItem] = []
+    
+    @Published var modelType: String
 
 
     func fetchSessions() async {
@@ -217,6 +219,7 @@ class ChatViewModel: ObservableObject {
     }
     
     init() {
+        self.modelType = "deepseek-r1" //  首先初始化属性
          // 在初始化时绑定 WebSocket 回调
          webSocketClient.onReceiveMessage = { [weak self] text in
              Task { @MainActor in
@@ -233,7 +236,6 @@ class ChatViewModel: ObservableObject {
          guard let sessionId = currentSessionId else { return }
          let trimmedText = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
          guard !trimmedText.isEmpty else { return }
-         
          // 1. 先添加用户消息
          let nowString = Self.currentTimeString()
          let currentUserId = Int64(userId ?? 0)
@@ -267,11 +269,11 @@ class ChatViewModel: ObservableObject {
          currentAIContent = ""
          
          // 3. 通过 WebSocket 发送用户输入
-         animationState = .thinking
-         webSocketClient.send(message: trimmedText, sessionId: currentSessionId)
          
- 
-
+         webSocketClient.send(
+            message: trimmedText,
+            sessionId: currentSessionId,
+            modelType: modelType)
      }
      
      // 处理 WebSocket 分片消息
@@ -297,6 +299,7 @@ class ChatViewModel: ObservableObject {
                  currentAIContent += response.data.stringValue
              } else {
                  // 如果没有占位消息（可能超时或替换失败），直接追加
+                
                  let nowString = Self.currentTimeString()
                  let aiSegment = ChatMessage(
                      id: Int64.random(in: Int64.min...Int64.max),
@@ -309,6 +312,7 @@ class ChatViewModel: ObservableObject {
                      updateTime: nowString
                  )
                  messages.append(aiSegment)
+                 
              }
              
          case "DONE":

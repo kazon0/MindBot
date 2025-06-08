@@ -1,6 +1,6 @@
 import Foundation
 
-let baseURL = "http://f6783e72.natappfree.cc"
+let baseURL = "http://c364b48b.natappfree.cc"
 
 struct APIResponse<T: Codable>: Codable {
     let code: Int

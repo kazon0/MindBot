@@ -21,14 +21,6 @@ struct MyView: View {
                 )
                 .ignoresSafeArea()
                 
-                ZStack {
-                    RoundedRectangle(cornerRadius: 40)
-                        .foregroundColor(Color(#colorLiteral(red: 0.737, green: 0.842, blue: 0.530, alpha: 1)))
-                        .shadow(color: Color.gray.opacity(animate ? 0.1 : 0.2), radius: animate ? 20 : 30, x: 0, y: -40)
-                        .opacity(animate ? 1 : 0)
-                        .offset(y: animate ? 0 : 40)
-                        .animation(.easeOut(duration: 0.6), value: animate)
-
                     VStack(spacing: 20) {
                         if appVM.isLoading {
                             ProgressView("加载中...")
@@ -37,21 +29,21 @@ struct MyView: View {
                                 .foregroundColor(.red)
                         } else if let user = appVM.currentUser {
                             userProfileSection(user: user)
+                                .opacity(animate ? 1 : 0)
+                                .animation(.easeOut(duration: 0.6), value: animate)
                             userInfoCard(user: user)
+                                .opacity(animate ? 1 : 0)
+                                .animation(.easeOut(duration: 0.6), value: animate)
                             MoodStatisticsCard()
+                                .opacity(animate ? 1 : 0)
+                                .animation(.easeOut(duration: 0.6), value: animate)
                             logoutButton
+                                .opacity(animate ? 1 : 0)
+                                .animation(.easeOut(duration: 0.6), value: animate)
                         }
                         Spacer()
                     }
-                    .offset(y: 50)
-                    .onAppear {
-                        animate = true
-                        if !appVM.isUserLoaded {
-                            Task {
-                                await appVM.autoLoginOrGuest()
-                            }
-                        }
-                    }
+                    .offset(y:40)
                     .sheet(isPresented: $isEditing) {
                         if let user = appVM.currentUser {
                             EditUserInfoView(user: user) { updatedUser in
@@ -74,7 +66,22 @@ struct MyView: View {
                             }
                         }
                     }
-                }
+                    .onAppear {
+                        if !appVM.isUserLoaded {
+                            Task {
+                                await appVM.autoLoginOrGuest()
+                                // 自动登录完成后再触发动画
+                                withAnimation(.easeOut(duration: 0.6)) {
+                                    animate = true
+                                }
+                            }
+                        } else {
+                            // 如果已经加载过用户信息，也触发动画
+                            withAnimation(.easeOut(duration: 0.6)) {
+                                animate = true
+                            }
+                        }
+                    }
             }
         }
     }

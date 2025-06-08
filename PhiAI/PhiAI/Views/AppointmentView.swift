@@ -44,7 +44,7 @@ struct AppointmentView: View {
             if let status = submitViewModel.appointmentResponse?.status {
                 return "预约状态：\(status)"
             } else {
-                return "预约成功"
+                return "预约成功，等待处理。"
             }
         } else if let err = submitViewModel.errorMessage {
             return err
@@ -52,6 +52,12 @@ struct AppointmentView: View {
             return "未知状态"
         }
     }
+
+    @MainActor
+    func getAppointmentAlertTitle() -> String {
+        submitViewModel.isSuccess ? "预约成功" : "预约失败"
+    }
+
     
     var body: some View {
         let availableDoctors = viewModel.doctors
@@ -150,16 +156,13 @@ struct AppointmentView: View {
                                 }
                                 .padding(.horizontal)
                             }
-                            .frame(height: 600)
-                            .offset(x:60,y:30)
+                            .frame(height: 500)
+                            .offset(x:0,y:30)
                         }
                             .frame(width: 300)
                         }
                     }
-                    .alert(isPresented: $showAlert) {
-                        Alert(title: Text("预约结果"), message: Text(getAppointmentMessage()), dismissButton: .default(Text("确定")))
-                    }
- 
+    
                     Spacer()
                     
                     // 预约按钮
@@ -182,6 +185,7 @@ struct AppointmentView: View {
                     }
                     
                 }
+
                 .task {
                     if let token = appointmentManager.token {
                         print(" token 不为空，开始拉取医生列表：\(token)")
@@ -198,6 +202,10 @@ struct AppointmentView: View {
                     }
                 }
             }
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text(getAppointmentAlertTitle()), message: Text(getAppointmentMessage()), dismissButton: .default(Text("确定")))
+            }
+
         }
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
@@ -269,7 +277,10 @@ struct AppointmentView: View {
         )
 
         await submitViewModel.makeAppointment(request)
-        showAlert = true
+        
+        DispatchQueue.main.async {
+            self.showAlert = true
+        }
     }
     
     @ViewBuilder

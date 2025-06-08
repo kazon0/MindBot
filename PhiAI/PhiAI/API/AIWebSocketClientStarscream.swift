@@ -15,12 +15,12 @@ class AIWebSocketClientStarscream: NSObject {
     var onConnect: (() -> Void)?
     var onDisconnect: ((Error?) -> Void)?
     var onError: ((Error) -> Void)?
-
+    
     func connect(token: String) {
         print("连接 WebSocket，使用 token: \(token)")
         self.token = token
 
-        var request = URLRequest(url: URL(string: "ws://f6783e72.natappfree.cc/api/ai/chat/websocket")!)
+        var request = URLRequest(url: URL(string: "ws://c364b48b.natappfree.cc/api/ai/chat/websocket")!)
         request.timeoutInterval = 30
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
@@ -35,7 +35,7 @@ class AIWebSocketClientStarscream: NSObject {
         socket?.disconnect()
     }
 
-    func send(message: String, sessionId: Int64?, modelType: String = "deepseek-v3") {
+    func send(message: String, sessionId: Int64?, modelType: String) {
         var payload: [String: Any] = [
             "modelType": modelType,
             "message": message

@@ -55,6 +55,11 @@
 		76DC4DF42DF17D2E00B3F5B6 /* Resource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DF32DF17D2E00B3F5B6 /* Resource.swift */; };
 		76DC4DF62DF17E2500B3F5B6 /* ResourceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DF52DF17E2500B3F5B6 /* ResourceDetailView.swift */; };
 		76DC4DF82DF208DF00B3F5B6 /* ChatPetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DF72DF208DF00B3F5B6 /* ChatPetView.swift */; };
+		76DC4DFA2DF37AD200B3F5B6 /* StickerAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DF92DF37AD200B3F5B6 /* StickerAPI.swift */; };
+		76DC4DFE2DF5ACCE00B3F5B6 /* MoodAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DFD2DF5ACCE00B3F5B6 /* MoodAnalysis.swift */; };
+		76DC4E002DF5B4D500B3F5B6 /* MoodAnalysisAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4DFF2DF5B4D500B3F5B6 /* MoodAnalysisAPI.swift */; };
+		76DC4E022DF5B54300B3F5B6 /* MessageMoodViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4E012DF5B54300B3F5B6 /* MessageMoodViewModel.swift */; };
+		76DC4E042DF5BB7500B3F5B6 /* MoodBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76DC4E032DF5BB7500B3F5B6 /* MoodBubbleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -119,6 +124,11 @@
 		76DC4DF32DF17D2E00B3F5B6 /* Resource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Resource.swift; sourceTree = "<group>"; };
 		76DC4DF52DF17E2500B3F5B6 /* ResourceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceDetailView.swift; sourceTree = "<group>"; };
 		76DC4DF72DF208DF00B3F5B6 /* ChatPetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPetView.swift; sourceTree = "<group>"; };
+		76DC4DF92DF37AD200B3F5B6 /* StickerAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StickerAPI.swift; sourceTree = "<group>"; };
+		76DC4DFD2DF5ACCE00B3F5B6 /* MoodAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodAnalysis.swift; sourceTree = "<group>"; };
+		76DC4DFF2DF5B4D500B3F5B6 /* MoodAnalysisAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodAnalysisAPI.swift; sourceTree = "<group>"; };
+		76DC4E012DF5B54300B3F5B6 /* MessageMoodViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageMoodViewModel.swift; sourceTree = "<group>"; };
+		76DC4E032DF5BB7500B3F5B6 /* MoodBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodBubbleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -176,6 +186,7 @@
 		76AA2A022DC90445003BD2A3 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				76DC4E032DF5BB7500B3F5B6 /* MoodBubbleView.swift */,
 				76DC4DF72DF208DF00B3F5B6 /* ChatPetView.swift */,
 				76DC4DF52DF17E2500B3F5B6 /* ResourceDetailView.swift */,
 				76DC4DF12DF1798E00B3F5B6 /* ResourceView.swift */,
@@ -209,6 +220,7 @@
 				7655E7D52DDF2044006B0FB5 /* ChatModel.swift */,
 				7655E7D72DDF2096006B0FB5 /* EmotionModel.swift */,
 				76DC4DE32DF03F4C00B3F5B6 /* Appointment.swift */,
+				76DC4DFD2DF5ACCE00B3F5B6 /* MoodAnalysis.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -216,6 +228,7 @@
 		76AA2A042DC90465003BD2A3 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				76DC4E012DF5B54300B3F5B6 /* MessageMoodViewModel.swift */,
 				76DC4DE92DF149E100B3F5B6 /* AppointmentViewModel.swift */,
 				76DC4DE72DF1356500B3F5B6 /* DoctorListViewModel.swift */,
 				76DC4DE12DF03E4900B3F5B6 /* AppointmentPlatformManager.swift */,
@@ -240,6 +253,8 @@
 				76DC4DD82DEF507500B3F5B6 /* UserAPI.swift */,
 				76DC4DE52DF03FD500B3F5B6 /* AppointmentAPI.swift */,
 				76DC4DED2DF178BA00B3F5B6 /* ResourceAPI.swift */,
+				76DC4DF92DF37AD200B3F5B6 /* StickerAPI.swift */,
+				76DC4DFF2DF5B4D500B3F5B6 /* MoodAnalysisAPI.swift */,
 			);
 			path = API;
 			sourceTree = "<group>";
@@ -329,6 +344,7 @@
 				76DC4DE22DF03E4900B3F5B6 /* AppointmentPlatformManager.swift in Sources */,
 				76DC4DE62DF03FD500B3F5B6 /* AppointmentAPI.swift in Sources */,
 				76DC4DD92DEF507500B3F5B6 /* UserAPI.swift in Sources */,
+				76DC4E042DF5BB7500B3F5B6 /* MoodBubbleView.swift in Sources */,
 				76AA2A0D2DCA0DE3003BD2A3 /* RegView.swift in Sources */,
 				76DC4DCB2DEC9DB100B3F5B6 /* AppointmentLoginView.swift in Sources */,
 				76AA2A152DCA640C003BD2A3 /* AppViewModel.swift in Sources */,
@@ -341,14 +357,17 @@
 				76AA2A242DCDFAD9003BD2A3 /* ChatViewModel.swift in Sources */,
 				76DC4DF02DF1796100B3F5B6 /* ResourceViewModel.swift in Sources */,
 				76DC4DD72DEF503300B3F5B6 /* MoodCalendarAPI.swift in Sources */,
+				76DC4E002DF5B4D500B3F5B6 /* MoodAnalysisAPI.swift in Sources */,
 				76DC4DDE2DEF58BF00B3F5B6 /* AIWebSocketClientStarscream.swift in Sources */,
 				76DC4DE42DF03F4C00B3F5B6 /* Appointment.swift in Sources */,
 				76AA2A082DC90531003BD2A3 /* MainView.swift in Sources */,
 				76DC4DCF2DEF35BC00B3F5B6 /* AudioRecorder.swift in Sources */,
 				7655E7EF2DE9A1EE006B0FB5 /* StickerWallView.swift in Sources */,
+				76DC4E022DF5B54300B3F5B6 /* MessageMoodViewModel.swift in Sources */,
 				76AA2A1D2DCC94C4003BD2A3 /* ChatView.swift in Sources */,
 				76DC4DE02DF011FB00B3F5B6 /* AppointmentView.swift in Sources */,
 				76AA2A172DCA653F003BD2A3 /* ProfileWrapperView.swift in Sources */,
+				76DC4DFE2DF5ACCE00B3F5B6 /* MoodAnalysis.swift in Sources */,
 				7655E7D42DDF2005006B0FB5 /* UserModel.swift in Sources */,
 				76DC4DC72DEC134100B3F5B6 /* MoodEditorView.swift in Sources */,
 				76AA2A0F2DCA1CC0003BD2A3 /* LogView.swift in Sources */,
@@ -366,6 +385,7 @@
 				76AA2A012DC9043E003BD2A3 /* PhiAIApp.swift in Sources */,
 				7655E7D82DDF2096006B0FB5 /* EmotionModel.swift in Sources */,
 				7655E7D62DDF2044006B0FB5 /* ChatModel.swift in Sources */,
+				76DC4DFA2DF37AD200B3F5B6 /* StickerAPI.swift in Sources */,
 				76DC4DE82DF1356500B3F5B6 /* DoctorListViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

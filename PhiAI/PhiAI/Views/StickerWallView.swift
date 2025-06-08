@@ -10,6 +10,7 @@ import WaterfallGrid
 
 struct StickerWallView: View {
     @StateObject private var viewModel = StickerWallViewModel()
+    @EnvironmentObject var appVM: AppViewModel
     @State private var showPostSheet = false
     @State private var animate = false
     @Binding var guestRefresh1 : Int
@@ -88,8 +89,12 @@ struct StickerWallView: View {
                             
                             ScrollView(.vertical, showsIndicators: false) {
                                 WaterfallGrid(viewModel.stickers) { sticker in
-                                    CollageBlockView(sticker: sticker)
-                                        .padding(.bottom, 5)
+                                    CollageBlockView(sticker: sticker, onDelete: { deletedSticker in
+                                        Task {
+                                            await viewModel.deleteSticker(deletedSticker)
+                                        }
+                                    })
+                                    .padding(.bottom, 5)
                                 }
                                 .gridStyle(
                                     columnsInPortrait: 2,
@@ -124,6 +129,13 @@ struct StickerWallView: View {
                 }
                 .offset(x:130,y:300)
             }
+            .alert(isPresented: $viewModel.showPermissionAlert) {
+                Alert(
+                    title: Text("无法删除"),
+                    message: Text("只能删除自己发布的贴纸喔～"),
+                    dismissButton: .default(Text("我知道了"))
+                )
+            }
             .sheet(isPresented: $showPostSheet) {
                 NavigationView {
                     StickerPostView(viewModel: viewModel)
@@ -133,6 +145,7 @@ struct StickerWallView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     animate = true
                 }
+                viewModel.currentUserId = appVM.currentUser?.id
                 viewModel.fetchStickers()
             }
     }
@@ -177,7 +190,7 @@ struct StickerPostView: View {
     @State private var message = ""
     @State private var author = ""
 
-    let availableStickers = ["猫生气", "猫伤心", "猫开心", "猫困惑","猫睡觉"]
+    let availableStickers = ["猫生气", "猫伤心", "猫开心","猫困惑","猫睡觉"]
 
     var body: some View {
         NavigationView {
@@ -221,9 +234,13 @@ struct StickerPostView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("发布") {
-                        viewModel.postSticker(imageName: selectedImageName, message: message, author: author)
-                        dismiss()
+                        Task {
+                            let moodType = moodTypeFromImage(selectedImageName)
+                            await viewModel.postStickerToBackend(imageName: selectedImageName, message: message, author: author, moodType: moodType)
+                            dismiss()
+                        }
                     }
+
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("取消") { dismiss() }
@@ -231,19 +248,37 @@ struct StickerPostView: View {
             }
         }
     }
+    func moodTypeFromImage(_ name: String) -> Int {
+        switch name {
+        case "猫开心": return 1
+        case "猫伤心": return 2
+        case "猫生气": return 3
+        case "猫困惑": return 4
+        case "猫睡觉": return 5
+        default: return 0
+        }
+    }
 }
 
 struct CollageBlockView: View {
     let sticker: Sticker
 
+    // 传入删除回调
+    var onDelete: ((Sticker) -> Void)?
+
+    // 是否处于编辑状态（抖动状态）
+    @State private var isEditing = false
+    // 用于抖动动画
+    @State private var shake = false
+
     var pseudoRandomOffset: CGFloat {
         let hash = abs(sticker.id.hashValue)
-        return CGFloat(hash % 60)
+        return CGFloat(hash % 70)
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            ZStack {
+            ZStack(alignment: .topLeading) {
                 GridOverlay() //  网格放最底层
                 
                 VStack(alignment: .leading,spacing: 10) {
@@ -268,8 +303,44 @@ struct CollageBlockView: View {
                 }
                 .padding()
 
+                if isEditing {
+                    // 删除按钮，点了调用回调删除
+                    Button(action: {
+                        onDelete?(sticker)
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .foregroundColor(.red)
+                            .background(Color.white.opacity(0.8))
+                            .clipShape(Circle())
+                    }
+                    .padding(6)
+                }
             }
             .clipShape(RoundedRectangle(cornerRadius: 12))
+            // 抖动动画
+            .rotationEffect(Angle(degrees: shake ? 1.5 : -1.5))
+            .animation(isEditing ? Animation.linear(duration: 0.15).repeatForever(autoreverses: true) : .default, value: shake)
+            .onAppear {
+                if isEditing {
+                    shake = true
+                }
+            }
+            .onChange(of: isEditing) { editing in
+                if editing {
+                    shake = true
+                } else {
+                    shake = false
+                }
+            }
+            .gesture(
+                LongPressGesture(minimumDuration: 0.6)
+                    .onEnded { _ in
+                        withAnimation {
+                            isEditing = true
+                        }
+                    }
+            )
 
             // 白色底栏
             HStack {
@@ -289,9 +360,10 @@ struct CollageBlockView: View {
         .cornerRadius(12)
         .shadow(radius: 3)
         .padding(4)
-        .frame(minHeight: 120, maxHeight: 250 + pseudoRandomOffset)
+        .frame(minHeight: 100, maxHeight: 180 + pseudoRandomOffset)
     }
 }
+
 
 
 struct StickerWallPreviewWrapper: View {
@@ -305,5 +377,6 @@ struct StickerWallPreviewWrapper: View {
 struct StickerWallView_Previews: PreviewProvider {
     static var previews: some View {
         StickerWallPreviewWrapper()
+            .environmentObject(AppViewModel())
     }
 }
